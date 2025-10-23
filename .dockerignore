@@ -1,0 +1,21 @@
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+
+# frontend
+frontend/node_modules
+frontend/.env
+frontend/.cache
+frontend/build
+
+# backend
+backend/node_modules
+backend/.env
+backend/dist
+
+# general
+.git
+.gitignore
+.vscode
+.DS_Store

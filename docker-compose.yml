@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: glycamed
+    working_dir: /app/backend
+    command: npm run dev
+    volumes:
+      - ./backend:/app/backend
+    restart: unless-stopped
+    environment:
+      - PORT=8080
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:latest
+    container_name: glycamed-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+volumes:
+  mongo_data:
