@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import productRoutes from "./routes/products.routes";
 import { errorHandler } from './middleware/errorHandler';
 import userRoutes from './routes/userRoutes';
 
@@ -15,6 +16,7 @@ const MONGO_URI = process.env.MONGO_URI;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use("/api", productRoutes);
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
