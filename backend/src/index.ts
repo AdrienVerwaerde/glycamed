@@ -2,25 +2,37 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import { errorHandler } from './middleware/errorHandler';
+import userRoutes from './routes/userRoutes';
+
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8080;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/glycamed';
+const PORT = process.env.PORT;
+const MONGO_URI = process.env.MONGO_URI;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Basic route
+// Routes
 app.get('/', (req, res) => {
-    res.json({ message: 'API is running' });
+    res.json({
+        message: 'Glycamed API',
+        version: '1.0.0'
+    });
 });
 
-// Connect to MongoDB
+app.use('/api/users', userRoutes);
+
+// Error handler (should be last)
+app.use(errorHandler);
+
+// Connect to MongoDB and start server
 mongoose
-    .connect(MONGO_URI)
+    .connect(MONGO_URI as string)
     .then(() => {
         console.log('✅ Connected to MongoDB');
         app.listen(PORT, () => {
