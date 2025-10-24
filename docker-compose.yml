@@ -2,20 +2,22 @@ services:
   app:
     build:
       context: .
+      dockerfile: Dockerfile
     container_name: glycamed
-    working_dir: /app/backend
-    command: npm run dev
     volumes:
       - ./backend:/app/backend
+      - /app/backend/node_modules
     restart: unless-stopped
     environment:
+      - NODE_ENV=development
       - PORT=8080
       - MONGO_URI=${MONGO_URI}
       - JWT_SECRET=${JWT_SECRET}
     ports:
       - "8080:8080"
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
 
   mongo:
     image: mongo:latest
@@ -25,6 +27,12 @@ services:
       - mongo_data:/data/db
     ports:
       - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
 volumes:
   mongo_data:
