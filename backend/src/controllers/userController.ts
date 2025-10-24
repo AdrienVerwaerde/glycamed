@@ -258,3 +258,4 @@ export const deactivateUser = async (req: Request, res: Response): Promise<void>
         });
     }
 };
+
