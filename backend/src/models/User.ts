@@ -1,11 +1,13 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import bcrypt from 'bcryptjs';
+
 
 // TypeScript interface for the User document
 export interface IUser extends Document {
     email: string;
     password: string;
     username: string;
-    role: 'user' | 'admin' |'amed';
+    role: 'user' | 'admin' | 'amed';
     createdAt: Date;
     updatedAt: Date;
 }
@@ -45,7 +47,28 @@ const UserSchema = new Schema<IUser>(
         timestamps: true
     }
 );
+// ===== MIDDLEWARE TO HASH PASSWORD =====
+
+// Hash password before saving (on create and update)
+UserSchema.pre('save', async function (next) {
+    // Only hash the password if it has been modified (or is new)
+    if (!this.isModified('password')) {
+        return next();
+    }
+
+    try {
+        // Generate salt
+        const salt = await bcrypt.genSalt(10);
+
+        // Hash password
+        this.password = await bcrypt.hash(this.password, salt);
+
+        next();
+    } catch (error: any) {
+        next(error);
+    }
+});
+
 
 UserSchema.index({ email: 1 });
-
 export default mongoose.model<IUser>('User', UserSchema);

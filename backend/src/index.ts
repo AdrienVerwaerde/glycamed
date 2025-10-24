@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import productRoutes from "./routes/products.routes";
+import productRoutes from "./routes/productsRoutes";
 import { errorHandler } from './middleware/errorHandler';
 import userRoutes from './routes/userRoutes';
 
