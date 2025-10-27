@@ -17,7 +17,12 @@ const PORT = process.env.PORT;
 const MONGO_URI = process.env.MONGO_URI;
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://frontend:3000"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use("/api", productRoutes);
 app.use(express.urlencoded({ extended: true }));
