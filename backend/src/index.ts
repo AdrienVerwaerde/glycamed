@@ -2,10 +2,13 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-import productRoutes from "./routes/productsRoutes";
 import { errorHandler } from "./middleware/errorHandler";
+
+//Routes imports
 import userRoutes from "./routes/userRoutes";
+import productRoutes from "./routes/productsRoutes";
 import consumptionRoutes from "./routes/consumptionRoutes";
+import alertRoutes from "./routes/alertRoutes";
 
 dotenv.config();
 
@@ -29,6 +32,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/users", userRoutes);
 app.use("/api/consumptions", consumptionRoutes);
+app.use("/api/alerts", alertRoutes);
 
 // Error handler (should be last)
 app.use(errorHandler);
