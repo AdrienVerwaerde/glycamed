@@ -33,6 +33,7 @@ services:
     environment:
       - NODE_ENV=development
       - REACT_APP_API_URL=http://localhost:8080/api
+      - CHOKIDAR_USEPOLLING=true # For hot reload in Docker
     ports:
       - "3000:3000"
     depends_on:
