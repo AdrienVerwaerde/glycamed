@@ -6,17 +6,18 @@ import {
     updateUser,
     deleteUser,
 } from '../controllers/userController';
+import { auth } from "../middleware/auth";
 
 const router = express.Router();
 
-// CRUD
-router.route('/')
-    .get(getAllUsers)
-    .post(createUser);
+// CRUD protégé (admin)
+router.route("/")
+  .get(auth(["admin"]), getAllUsers)
+  .post(auth(["admin"]), createUser);
 
-router.route('/:id')
-    .get(getUserById)
-    .put(updateUser)
-    .delete(deleteUser);
+router.route("/:id")
+  .get(auth(["admin"]), getUserById)
+  .put(auth(["admin"]), updateUser)
+  .delete(auth(["admin"]), deleteUser);
 
 export default router;
