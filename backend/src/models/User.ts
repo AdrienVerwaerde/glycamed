@@ -1,17 +1,18 @@
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcryptjs";
 
-// TypeScript interface for the User document
 export interface IUser extends Document {
   email: string;
   password: string;
   username: string;
   role: "user" | "admin" | "amed";
+  isActive: boolean;
+  tokenVersion: number;
   createdAt: Date;
   updatedAt: Date;
+  comparePassword(candidate: string): Promise<boolean>;
 }
 
-// Mongoose schema
 const UserSchema = new Schema<IUser>(
   {
     email: {
@@ -21,7 +22,7 @@ const UserSchema = new Schema<IUser>(
       lowercase: true,
       trim: true,
       match: [
-        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/,
         "Please provide a valid email",
       ],
     },
@@ -35,38 +36,42 @@ const UserSchema = new Schema<IUser>(
       type: String,
       required: [true, "Username is required"],
       unique: true,
+      trim: true,
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user", "admin", "amed"],
       default: "user",
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
-// ===== MIDDLEWARE TO HASH PASSWORD =====
 
-// Hash password before saving (on create and update)
+// Hash password before saving (on create and when modified)
 UserSchema.pre("save", async function (next) {
-  // Only hash the password if it has been modified (or is new)
-  if (!this.isModified("password")) {
-    return next();
-  }
-
+  if (!this.isModified("password")) return next();
   try {
-    // Generate salt
-    const salt = await bcrypt.genSalt(10);
-
-    // Hash password
+    const rounds = Number(process.env.BCRYPT_ROUNDS ?? 10);
+    const salt = await bcrypt.genSalt(rounds);
     this.password = await bcrypt.hash(this.password, salt);
-
     next();
-  } catch (error: any) {
-    next(error);
+  } catch (err) {
+    next(err as any);
   }
 });
 
-UserSchema.index({ email: 1 });
+UserSchema.methods.comparePassword = async function (candidate: string) {
+  return bcrypt.compare(candidate, this.password);
+};
+
+UserSchema.index({ email: 1 }, { unique: true });
+
 export default mongoose.model<IUser>("User", UserSchema);
