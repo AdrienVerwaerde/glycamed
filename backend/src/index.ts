@@ -3,12 +3,14 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import { errorHandler } from "./middleware/errorHandler";
+import cookieParser from "cookie-parser";
 
 //Routes imports
 import userRoutes from "./routes/userRoutes";
 import productRoutes from "./routes/productsRoutes";
 import consumptionRoutes from "./routes/consumptionRoutes";
 import alertRoutes from "./routes/alertRoutes";
+import authRoutes from "./routes/authRoutes";
 
 dotenv.config();
 
@@ -17,10 +19,17 @@ const PORT = process.env.PORT;
 const MONGO_URI = process.env.MONGO_URI;
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://frontend:3000"],
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 app.use(express.json());
-app.use("/api", productRoutes);
 app.use(express.urlencoded({ extended: true }));
+
+app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 
 // Routes
 app.get("/", (req, res) => {
@@ -30,6 +39,8 @@ app.get("/", (req, res) => {
   });
 });
 
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/consumptions", consumptionRoutes);
 app.use("/api/alerts", alertRoutes);
