@@ -6,7 +6,6 @@ import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
 
@@ -32,7 +31,12 @@ export default function AnchorTemporaryDrawer() {
   const list = (anchor) => (
     <Box
       sx={{
-        width: anchor === "top" || anchor === "bottom" ? "auto" : 250,
+        width: 250,
+        height: "100vh",
+        backgroundColor: "var(--color-background)",
+        color: "var(--color-yellow)",
+        display: "flex",
+        flexDirection: "column",
       }}
       role="presentation"
       onClick={toggleDrawer(anchor, false)}
@@ -40,21 +44,35 @@ export default function AnchorTemporaryDrawer() {
     >
       <List>
         {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
-          <ListItem key={text} disablePadding>
+          <ListItem
+            key={text}
+            disablePadding
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <ListItemButton>
-              <ListItemIcon></ListItemIcon>
-              <ListItemText primary={text} />
+              <ListItemText primary={text} sx={{ textAlign: "center" }} />
             </ListItemButton>
           </ListItem>
         ))}
       </List>
-      <Divider />
+      <Divider variant="middle" sx={{ borderColor: "var(--color-white)" }} />
       <List>
-        {["All mail", "Trash", "Spam"].map((text, index) => (
-          <ListItem key={text} disablePadding>
+        {["Profil", "Deconnexion"].map((text, index) => (
+          <ListItem
+            key={text}
+            disablePadding
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <ListItemButton>
-              <ListItemIcon></ListItemIcon>
-              <ListItemText primary={text} />
+              <ListItemText primary={text} sx={{ textAlign: "center" }} />
             </ListItemButton>
           </ListItem>
         ))}
