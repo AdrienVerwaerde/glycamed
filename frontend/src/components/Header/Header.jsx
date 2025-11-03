@@ -17,7 +17,14 @@ export const Header = () => {
         borderBottom: "1px solid var(--color-yellow)",
       }}
     >
-      <Typography variant="h4" sx={{ color: "var(--color-yellow)", px: "8px" }}>
+      <Typography
+        variant="h4"
+        sx={{
+          color: "var(--color-yellow)",
+          pl: 3,
+          fontFamily: "Rubik Vinyl",
+        }}
+      >
         ParAmedic
       </Typography>
       <AnchorTemporaryDrawer />

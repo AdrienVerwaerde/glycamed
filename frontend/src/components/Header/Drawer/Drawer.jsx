@@ -38,6 +38,8 @@ export default function AnchorTemporaryDrawer() {
         color: "var(--color-yellow)",
         display: "flex",
         flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
       }}
       role="presentation"
       onClick={toggleDrawer(anchor, false)}
