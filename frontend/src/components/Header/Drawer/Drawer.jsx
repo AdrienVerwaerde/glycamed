@@ -3,11 +3,12 @@ import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import Button from "@mui/material/Button";
 import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
+import links from "../../../lib/data/links";
+import { Link as RouterLink } from "react-router-dom";
 
 export default function AnchorTemporaryDrawer() {
   const [state, setState] = React.useState({
@@ -43,9 +44,9 @@ export default function AnchorTemporaryDrawer() {
       onKeyDown={toggleDrawer(anchor, false)}
     >
       <List>
-        {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
+        {links.map((link) => (
           <ListItem
-            key={text}
+            key={link.id}
             disablePadding
             sx={{
               display: "flex",
@@ -53,26 +54,12 @@ export default function AnchorTemporaryDrawer() {
               justifyContent: "center",
             }}
           >
-            <ListItemButton>
-              <ListItemText primary={text} sx={{ textAlign: "center" }} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      <Divider variant="middle" sx={{ borderColor: "var(--color-white)" }} />
-      <List>
-        {["Profil", "Deconnexion"].map((text, index) => (
-          <ListItem
-            key={text}
-            disablePadding
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <ListItemButton>
-              <ListItemText primary={text} sx={{ textAlign: "center" }} />
+            <ListItemButton
+              component={RouterLink}
+              to={link.url}
+              onClick={toggleDrawer(anchor, false)}
+            >
+              <ListItemText primary={link.title} sx={{ textAlign: "center" }} />
             </ListItemButton>
           </ListItem>
         ))}
