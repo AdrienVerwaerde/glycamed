@@ -41,13 +41,11 @@ function parseRefreshMaxAge() {
 export const register = async (req: Request, res: Response) => {
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        error: "Validation error",
-        details: parsed.error.flatten(),
-      });
+    return res.status(400).json({
+      success: false,
+      error: "Validation error",
+      details: parsed.error.flatten(),
+    });
   }
   const { email, password, username, role } = parsed.data;
 
@@ -92,31 +90,31 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        error: "Validation error",
-        details: parsed.error.flatten(),
-      });
+    return res.status(400).json({
+      success: false,
+      error: "Validation error",
+      errorCode: "VALIDATION_ERROR",
+      details: parsed.error.flatten(),
+    });
   }
   const { email, password } = parsed.data;
 
-  const user = await User.findOne({
-    email: email.toLowerCase(),
-    isActive: true,
-  }).select("+password");
+  const user = await User.findOne({ email: email.toLowerCase() });
   if (!user) {
-    return res
-      .status(401)
-      .json({ success: false, error: "Invalid credentials" });
+    return res.status(404).json({
+      success: false,
+      error: "User not found",
+      errorCode: "USER_NOT_FOUND",
+    });
   }
 
-  const ok = await user.comparePassword(password);
-  if (!ok) {
-    return res
-      .status(401)
-      .json({ success: false, error: "Invalid credentials" });
+  const valid = await user.comparePassword(password);
+  if (!valid) {
+    return res.status(401).json({
+      success: false,
+      error: "Invalid credentials",
+      errorCode: "INVALID_CREDENTIALS",
+    });
   }
 
   const access = signAccessToken({
