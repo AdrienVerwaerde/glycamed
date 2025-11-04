@@ -72,20 +72,15 @@ export default function AnchorTemporaryDrawer() {
   return (
     <Box>
       {["right"].map((anchor) => (
-        <Box key={anchor}>
-          <Button
+        <Box key={anchor} sx={{ display: "flex", alignItems: "center" }}>
+          <MenuIcon
             onClick={toggleDrawer(anchor, true)}
             sx={{
               color: "var(--color-yellow)",
-              backgroundColor: "transparent",
-              minWidth: "auto",
+              fontSize: "32px",
+              pr: "22px",
             }}
-            disableFocusRipple
-            disableRipple
-            disableTouchRipple
-          >
-            <MenuIcon sx={{ fontSize: "30px" }} />
-          </Button>
+          />
           <Drawer
             anchor={anchor}
             open={state[anchor]}
