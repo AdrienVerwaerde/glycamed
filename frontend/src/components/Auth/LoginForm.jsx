@@ -19,6 +19,30 @@ export default function LoginForm() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  // Function to get user-friendly error messages
+  const getErrorMessage = (err) => {
+    if (err.response?.data) {
+      const { error, errorCode } = err.response.data;
+      switch (errorCode) {
+        case "USER_NOT_FOUND":
+          return "Aucun compte n'existe avec cet email";
+
+        case "INVALID_CREDENTIALS":
+          return "Mot de passe incorrect. Veuillez réessayer";
+
+        case "VALIDATION_ERROR":
+          return "Veuillez remplir tous les champs correctement";
+
+        default:
+          return error || "Erreur lors de la connexion";
+      }
+    }
+    if (err.message === "Network Error") {
+      return "Impossible de se connecter au serveur. Veuillez vérifier votre connexion internet.";
+    }
+    return "Une erreur inattendue s'est produite. Veuillez réessayer.";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -28,8 +52,7 @@ export default function LoginForm() {
       await login(email, password);
       navigate("/");
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.error || "Erreur lors de la connexion";
+      const errorMessage = getErrorMessage(err);
       setError(errorMessage);
       console.error("Login error:", err);
     } finally {
