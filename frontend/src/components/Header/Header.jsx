@@ -2,7 +2,7 @@ import Box from "@mui/material/Box";
 import AnchorTemporaryDrawer from "./Drawer/Drawer";
 import Typography from "@mui/material/Typography";
 
-export const Header = () => {
+export default function Header() {
   return (
     <Box
       sx={{
@@ -30,4 +30,4 @@ export const Header = () => {
       <AnchorTemporaryDrawer />
     </Box>
   );
-};
+}

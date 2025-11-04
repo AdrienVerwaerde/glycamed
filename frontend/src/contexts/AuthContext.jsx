@@ -27,17 +27,26 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const response = await authAPI.login({ email, password });
-    localStorage.setItem("accessToken", response.data.data.accessToken);
-    setUser(response.data.data.user);
-    return response.data;
+    try {
+      const response = await authAPI.login({ email, password });
+      localStorage.setItem("accessToken", response.data.data.accessToken);
+      setUser(response.data.data.user);
+      return response.data;
+    } catch (error) {
+      console.error("AuthContext: Login failed", error);
+      throw error;
+    }
   };
 
   const register = async (userData) => {
-    const response = await authAPI.register(userData);
-    localStorage.setItem("accessToken", response.data.data.accessToken);
-    setUser(response.data.data.user);
-    return response.data;
+    try {
+      const response = await authAPI.register(userData);
+      localStorage.setItem("accessToken", response.data.data.accessToken);
+      setUser(response.data.data.user);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   };
 
   const logout = async () => {
