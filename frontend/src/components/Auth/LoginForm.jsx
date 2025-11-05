@@ -6,7 +6,7 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 
@@ -18,33 +18,12 @@ export default function LoginForm() {
 
   const { login } = useAuth();
   const navigate = useNavigate();
-
-  // Function to get user-friendly error messages
-  const getErrorMessage = (err) => {
-    if (err.response?.data) {
-      const { error, errorCode } = err.response.data;
-      switch (errorCode) {
-        case "USER_NOT_FOUND":
-          return "Aucun compte n'existe avec cet email";
-
-        case "INVALID_CREDENTIALS":
-          return "Mot de passe incorrect. Veuillez réessayer";
-
-        case "VALIDATION_ERROR":
-          return "Veuillez remplir tous les champs correctement";
-
-        default:
-          return error || "Erreur lors de la connexion";
-      }
-    }
-    if (err.message === "Network Error") {
-      return "Impossible de se connecter au serveur. Veuillez vérifier votre connexion internet.";
-    }
-    return "Une erreur inattendue s'est produite. Veuillez réessayer.";
-  };
+  const location = useLocation();
+  const successMessage = location.state?.message;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setError("");
     setLoading(true);
 
@@ -52,9 +31,17 @@ export default function LoginForm() {
       await login(email, password);
       navigate("/");
     } catch (err) {
-      const errorMessage = getErrorMessage(err);
-      setError(errorMessage);
       console.error("Login error:", err);
+
+      let errorMessage = "Une erreur s'est produite";
+
+      if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.message === "Network Error") {
+        errorMessage = "Impossible de se connecter au serveur";
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -92,14 +79,24 @@ export default function LoginForm() {
         <Stack
           component="form"
           onSubmit={handleSubmit}
+          noValidate
           spacing={2}
           sx={{ p: 5 }}
         >
+          {successMessage && (
+            <Alert
+              severity="success"
+              sx={{ borderRadius: "12px", maxWidth: "248px" }}
+            >
+              {successMessage}
+            </Alert>
+          )}
+
           {error && (
             <Alert
               severity="error"
               onClose={() => setError("")}
-              sx={{ borderRadius: "12px" }}
+              sx={{ borderRadius: "12px", maxWidth: "248px" }}
             >
               {error}
             </Alert>
@@ -125,7 +122,12 @@ export default function LoginForm() {
             fullWidth
             autoComplete="current-password"
           />
-          <Button type="submit" disabled={loading} fullWidth sx={{ mt: 2 }}>
+          <Button
+            type="submit"
+            disabled={loading}
+            fullWidth
+            sx={{ mt: 2, width: "280px" }}
+          >
             {loading ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
@@ -134,8 +136,8 @@ export default function LoginForm() {
           </Button>
           <Typography variant="body1">
             Pas encore de compte ?{" "}
-            <a
-              href="/register"
+            <Link
+              to="/register"
               style={{
                 color: "var(--color-blue)",
                 fontWeight: "bold",
@@ -143,7 +145,7 @@ export default function LoginForm() {
               }}
             >
               S'inscrire !
-            </a>
+            </Link>
           </Typography>
         </Stack>
       </Card>
