@@ -9,6 +9,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
+import CloseIcon from "@mui/icons-material/Close";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -49,6 +50,16 @@ export default function LoginForm() {
 
   return (
     <Box>
+      <CloseIcon
+        sx={{
+          color: "var(--color-yellow)",
+          position: "absolute",
+          top: 15,
+          right: 25,
+          fontSize: "32px",
+        }}
+        onClick={() => navigate("/")}
+      />
       <Card
         sx={{
           borderRadius: "12px",

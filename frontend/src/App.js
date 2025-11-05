@@ -7,6 +7,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ProtectedRoute from "./components/Auth/ProtectedRoute";
 import AmedPage from "./pages/AmedPage";
 import Layout from "./components/Layout";
+import AddConsumptionPage from "./pages/AddConsumptionPage";
 
 export default function App() {
   return (
@@ -20,6 +21,15 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <AmedPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/addconsumption"
+              element={
+                <ProtectedRoute>
+                  <AddConsumptionPage />
                 </ProtectedRoute>
               }
             />

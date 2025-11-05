@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import axios from "axios";
+import CloseIcon from "@mui/icons-material/Close";
 
 export default function RegisterForm() {
   const [email, setEmail] = useState("");
@@ -79,6 +80,16 @@ export default function RegisterForm() {
 
   return (
     <Box>
+      <CloseIcon
+        sx={{
+          color: "var(--color-yellow)",
+          position: "absolute",
+          top: 15,
+          right: 25,
+          fontSize: "32px",
+        }}
+        onClick={() => navigate("/")}
+      />
       <Card
         sx={{
           borderRadius: "12px",
