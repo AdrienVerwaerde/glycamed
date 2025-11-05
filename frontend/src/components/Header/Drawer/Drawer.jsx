@@ -6,16 +6,15 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 import links from "../../../lib/data/links";
 import { Link, Link as RouterLink, useNavigate } from "react-router-dom";
 import Divider from "@mui/material/Divider";
 import { useAuth } from "../../../contexts/AuthContext";
-import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
 
 export default function AnchorTemporaryDrawer() {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -50,12 +49,20 @@ export default function AnchorTemporaryDrawer() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
+        pt: 8,
       }}
       role="presentation"
-      onClick={toggleDrawer(anchor, false)}
-      onKeyDown={toggleDrawer(anchor, false)}
     >
+      <CloseIcon
+        onClick={toggleDrawer(anchor, false)}
+        sx={{
+          color: "var(--color-yellow)",
+          position: "absolute",
+          top: 15,
+          right: 25,
+          fontSize: "32px",
+        }}
+      />
       <List>
         {links.map((link) => (
           <ListItem
@@ -104,12 +111,20 @@ export default function AnchorTemporaryDrawer() {
                 width: "100%",
                 mt: 1,
               }}
-              onClick={handleLogout}
+              onClick={(e) => {
+                handleLogout();
+                toggleDrawer(anchor, false)(e);
+              }}
             >
               Déconnexion
             </Button>
           ) : (
-            <Button sx={{ width: "100%", mt: 1 }} component={Link} to="/login">
+            <Button
+              sx={{ width: "100%", mt: 1 }}
+              component={Link}
+              to="/login"
+              onClick={toggleDrawer(anchor, false)}
+            >
               Connexion
             </Button>
           )}
