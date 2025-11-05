@@ -33,7 +33,6 @@ export function AuthProvider({ children }) {
       setUser(response.data.data.user);
       return response.data;
     } catch (error) {
-      console.error("AuthContext: Login failed", error);
       throw error;
     }
   };
