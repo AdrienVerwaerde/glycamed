@@ -7,9 +7,21 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
 import links from "../../../lib/data/links";
-import { Link as RouterLink } from "react-router-dom";
+import { Link, Link as RouterLink, useNavigate } from "react-router-dom";
+import Divider from "@mui/material/Divider";
+import { useAuth } from "../../../contexts/AuthContext";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
 
 export default function AnchorTemporaryDrawer() {
+  const { user, logout, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
   const [state, setState] = React.useState({
     top: false,
     left: false,
@@ -64,6 +76,44 @@ export default function AnchorTemporaryDrawer() {
             </ListItemButton>
           </ListItem>
         ))}
+      </List>
+
+      <Divider
+        sx={{
+          backgroundColor: "var(--color-yellow)",
+          borderWidth: "1px",
+          width: "80%",
+          my: 2,
+        }}
+      />
+
+      <List>
+        <ListItem
+          disablePadding
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {isAuthenticated ? (
+            <Button
+              sx={{
+                backgroundColor: "var(--color-red)",
+                color: "var(--color-white)",
+                width: "100%",
+                mt: 1,
+              }}
+              onClick={handleLogout}
+            >
+              Déconnexion
+            </Button>
+          ) : (
+            <Button sx={{ width: "100%", mt: 1 }} component={Link} to="/login">
+              Connexion
+            </Button>
+          )}
+        </ListItem>
       </List>
     </Box>
   );
