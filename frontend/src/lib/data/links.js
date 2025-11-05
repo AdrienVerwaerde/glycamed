@@ -6,8 +6,8 @@ const links = [
   },
   {
     id: 2,
-    title: "Connexion",
-    url: "/login",
+    title: "Rapports",
+    url: "/reports",
   },
 ];
 
