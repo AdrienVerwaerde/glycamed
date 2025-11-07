@@ -1,14 +1,11 @@
-// src/pages/HomePage.jsx
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Box,
-  Container,
-  Typography,
   Button,
   Grid,
-  Paper,
   Alert,
   CircularProgress,
+  Card,
 } from "@mui/material";
 import {
   Add,
@@ -45,37 +42,16 @@ export default function HomePage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 4,
-        }}
-      >
-        <Typography variant="h4" component="h1">
-          Tableau de bord
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => setModalOpen(true)}
-          size="large"
-        >
-          Ajouter une consommation
-        </Button>
-      </Box>
+    <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+      <Card sx={{ mt: 10, mx: 2, p: 4 }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <Paper elevation={2} sx={{ p: 3 }}>
+        <Grid container spacing={2} sx={{ justifyContent: "center" }}>
+          <Grid item xs={12} md={4} sx={{ width: "100%" }}>
             <Gauge
               label="Sucre"
               amount={totals?.sugar ?? 0}
@@ -84,11 +60,9 @@ export default function HomePage() {
               icon={<Opacity />}
               thresholds={{ low: 60, medium: 80 }}
             />
-          </Paper>
-        </Grid>
+          </Grid>
 
-        <Grid item xs={12} md={4}>
-          <Paper elevation={2} sx={{ p: 3 }}>
+          <Grid item xs={12} md={4} sx={{ width: "100%" }}>
             <Gauge
               label="Calories"
               amount={totals?.calories ?? 0}
@@ -97,11 +71,9 @@ export default function HomePage() {
               icon={<LocalFireDepartment />}
               thresholds={{ low: 60, medium: 80 }}
             />
-          </Paper>
-        </Grid>
+          </Grid>
 
-        <Grid item xs={12} md={4}>
-          <Paper elevation={2} sx={{ p: 3 }}>
+          <Grid item xs={12} md={4} sx={{ width: "100%" }}>
             <Gauge
               label="Caféine"
               amount={totals?.caffeine ?? 0}
@@ -110,11 +82,21 @@ export default function HomePage() {
               icon={<LocalDrink />}
               thresholds={{ low: 60, medium: 80 }}
             />
-          </Paper>
+          </Grid>
         </Grid>
-      </Grid>
+        <Button
+          sx={{ mt: 4, width: "100%" }}
+          startIcon={<Add />}
+          onClick={() => setModalOpen(true)}
+        >
+          Ajouter une consommation
+        </Button>
 
-      <ConsumptionModal open={modalOpen} onClose={() => setModalOpen(false)} />
-    </Container>
+        <ConsumptionModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+        />
+      </Card>
+    </Box>
   );
 }

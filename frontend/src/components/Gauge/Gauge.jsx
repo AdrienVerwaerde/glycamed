@@ -1,5 +1,3 @@
-// src/components/NutrientGauge.jsx
-import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import LinearProgress from "@mui/material/LinearProgress";
@@ -13,16 +11,16 @@ const StyledLinearProgress = styled(LinearProgress)(({ theme, severity }) => ({
     borderRadius: 5,
     backgroundColor:
       severity === "high"
-        ? theme.palette.error.main
+        ? "var(--color-red)"
         : severity === "medium"
-        ? theme.palette.warning.main
-        : theme.palette.success.main,
+        ? "var(--color-yellow)"
+        : "var(--color-blue)",
   },
 }));
 
 export default function Gauge({
   label,
-  amount = 0, // Default to 0
+  amount = 0,
   max,
   unit = "mg",
   thresholds = { low: 50, medium: 75 },
@@ -43,11 +41,11 @@ export default function Gauge({
   const getColor = () => {
     switch (severity) {
       case "high":
-        return "#d32f2f";
+        return "var(--color-red)";
       case "medium":
-        return "#ed6c02";
+        return "var(--color-yellow)";
       default:
-        return "#2e7d32";
+        return "var(--color-blue)";
     }
   };
 

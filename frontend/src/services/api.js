@@ -94,13 +94,13 @@ export const consumptionAPI = {
 
 // Products API calls
 export const productsAPI = {
-  // Search products in OpenFoodFacts
-  search: (query, page = 1, pageSize = 10) =>
+  // Search products via your backend (which calls OFF and caches)
+  search: (query, page = 1, pageSize = 20) =>
     api.get("/products/search", {
       params: { q: query, page, pageSize },
     }),
 
-  // Get product by barcode
+  // Get product by barcode via your backend (cached)
   getByBarcode: (barcode) => api.get(`/products/barcode/${barcode}`),
 };
 

@@ -1,3 +1,4 @@
+// src/components/AddConsumptionModal.jsx
 import React, { useState } from "react";
 import {
   Dialog,
@@ -6,337 +7,376 @@ import {
   DialogActions,
   Button,
   TextField,
-  Autocomplete,
-  CircularProgress,
   Box,
-  Typography,
   Alert,
-  Grid,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  ListItemAvatar,
+  Avatar,
+  Typography,
   InputAdornment,
+  Divider,
 } from "@mui/material";
-import { Search, LocalCafe, Place, Notes } from "@mui/icons-material";
+import { Search, QrCode, LocalDrink } from "@mui/icons-material";
 import { productsAPI } from "../../services/api";
 import { useConsumption } from "../../contexts/ConsumptionContext";
 
 export default function ConsumptionModal({ open, onClose }) {
   const { addConsumption } = useConsumption();
 
-  // Step 1: Product search
+  // Step management
+  const [step, setStep] = useState(1); // 1: search, 2: details
+
+  // Search state
   const [searchQuery, setSearchQuery] = useState("");
-  const [products, setProducts] = useState([]);
-  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+
+  // Selected product
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // Step 2: Consumption details
-  const [quantity, setQuantity] = useState(100);
-  const [location, setLocation] = useState("");
-  const [notes, setNotes] = useState("");
-
-  const [error, setError] = useState(null);
+  // Form state
+  const [formData, setFormData] = useState({
+    quantity: 250,
+    location: "",
+    notes: "",
+  });
+  const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Search products from OpenFoodFacts
-  const handleSearchProducts = async (query) => {
-    if (!query || query.length < 2) {
-      setProducts([]);
+  // Reset modal
+  const handleClose = () => {
+    setStep(1);
+    setSearchQuery("");
+    setSearchResults([]);
+    setSearchError("");
+    setSelectedProduct(null);
+    setFormData({ quantity: 100, location: "", notes: "" });
+    setFormError("");
+    onClose();
+  };
+
+  // Search products via YOUR backend
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      setSearchError("Veuillez entrer un terme de recherche");
       return;
     }
 
+    setSearchLoading(true);
+    setSearchError("");
+
     try {
-      setLoadingProducts(true);
-      setError(null);
-      const { data } = await productsAPI.search(query, 1, 20);
-      setProducts(data.products || []);
+      const { data } = await productsAPI.search(searchQuery);
+
+      if (data.products && data.products.length > 0) {
+        setSearchResults(data.products);
+      } else {
+        setSearchError("Aucun produit trouvé");
+        setSearchResults([]);
+      }
     } catch (err) {
-      console.error("Error searching products:", err);
-      setError("Erreur lors de la recherche des produits");
-      setProducts([]);
+      console.error("Search error:", err);
+      setSearchError(
+        err.response?.data?.error || "Erreur lors de la recherche"
+      );
+      setSearchResults([]);
     } finally {
-      setLoadingProducts(false);
+      setSearchLoading(false);
     }
   };
 
-  // Handle product selection
-  const handleProductSelect = (event, value) => {
-    setSelectedProduct(value);
-    setError(null);
+  // Search by barcode via YOUR backend
+  const handleBarcodeSearch = async () => {
+    const barcode = prompt("Entrez le code-barres du produit:");
+    if (!barcode) return;
+
+    setSearchLoading(true);
+    setSearchError("");
+
+    try {
+      const { data } = await productsAPI.getByBarcode(barcode);
+
+      if (data) {
+        // Convert backend product format to expected format
+        selectProduct({
+          code: data.code,
+          name: data.name,
+          brand: data.brand,
+          imageUrl: data.imageUrl,
+          nutriments: {
+            sugars_100g: data.nutriments?.sugars_100g || 0,
+            caffeine_100g: data.nutriments?.caffeine_100g || 0,
+            "energy-kcal_100g": data.nutriments?.energy_kcal_100g || 0,
+          },
+        });
+      } else {
+        setSearchError("Produit introuvable");
+      }
+    } catch (err) {
+      console.error("Barcode search error:", err);
+      setSearchError(
+        err.response?.data?.error || "Produit introuvable avec ce code-barres"
+      );
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // Select product and move to step 2
+  const selectProduct = (product) => {
+    setSelectedProduct(product);
+    setStep(2);
   };
 
   // Calculate nutrients based on quantity
-  const getCalculatedNutrients = () => {
-    if (!selectedProduct) return null;
+  const calculateNutrients = () => {
+    if (!selectedProduct) return { caffeine: 0, sugar: 0, calories: 0 };
 
-    const nutriments = selectedProduct.nutriments || {};
-    const factor = quantity / 100; // OpenFoodFacts data is per 100g
-
+    const factor = formData.quantity / 100;
     return {
-      caffeine: (nutriments.caffeine_100g || 0) * factor,
-      sugar: (nutriments.sugars_100g || 0) * factor,
-      calories: (nutriments["energy-kcal_100g"] || 0) * factor,
+      caffeine: (selectedProduct.nutriments?.caffeine_100g || 0) * factor,
+      sugar: (selectedProduct.nutriments?.sugars_100g || 0) * factor,
+      calories:
+        (selectedProduct.nutriments?.["energy-kcal_100g"] || 0) * factor,
     };
   };
 
-  const calculatedNutrients = getCalculatedNutrients();
-
   // Submit consumption
-  const handleAddConsumption = async () => {
-    if (!selectedProduct) {
-      setError("Veuillez sélectionner un produit");
+  const handleSubmit = async () => {
+    // Validation
+    if (!formData.location.trim()) {
+      setFormError("Veuillez spécifier un lieu");
       return;
     }
 
-    if (!location.trim()) {
-      setError("Veuillez indiquer un lieu");
+    if (formData.quantity <= 0) {
+      setFormError("La quantité doit être supérieure à 0");
       return;
     }
 
-    if (quantity <= 0) {
-      setError("La quantité doit être supérieure à 0");
-      return;
-    }
+    setSubmitting(true);
+    setFormError("");
 
     try {
-      setSubmitting(true);
-      setError(null);
+      const nutrients = calculateNutrients();
 
       await addConsumption({
-        product_name: selectedProduct.product_name,
-        quantity,
-        location: location.trim(),
-        notes: notes.trim(),
-        nutriments: selectedProduct.nutriments,
+        product_name: `${selectedProduct.name}${
+          selectedProduct.brand ? ` - ${selectedProduct.brand}` : ""
+        }`,
+        quantity: formData.quantity,
+        location: formData.location,
+        notes: formData.notes,
+        nutriments: {
+          caffeine_100g: selectedProduct.nutriments?.caffeine_100g || 0,
+          sugars_100g: selectedProduct.nutriments?.sugars_100g || 0,
+          "energy-kcal_100g":
+            selectedProduct.nutriments?.["energy-kcal_100g"] || 0,
+        },
       });
 
-      // Reset form and close
       handleClose();
     } catch (err) {
-      setError(err.message || "Erreur lors de l'ajout de la consommation");
+      console.error("Submit error:", err);
+      setFormError(err.message || "Erreur lors de l'ajout");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleClose = () => {
-    setSearchQuery("");
-    setProducts([]);
-    setSelectedProduct(null);
-    setQuantity(100);
-    setLocation("");
-    setNotes("");
-    setError(null);
-    onClose();
-  };
+  const nutrients = calculateNutrients();
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: { minHeight: "60vh" },
-      }}
-    >
-      <DialogTitle>Ajouter une consommation</DialogTitle>
+    <Dialog open={open} onClose={handleClose} fullWidth>
+      <DialogTitle>
+        {step === 1 ? "Rechercher un produit" : "Détails de la consommation"}
+      </DialogTitle>
 
-      <DialogContent dividers>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Step 1: Search Product */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" gutterBottom>
-            1. Rechercher un produit
-          </Typography>
-          <Autocomplete
-            freeSolo
-            options={products}
-            loading={loadingProducts}
-            value={selectedProduct}
-            onChange={handleProductSelect}
-            onInputChange={(e, value) => {
-              setSearchQuery(value);
-              handleSearchProducts(value);
-            }}
-            getOptionLabel={(option) =>
-              option.product_name ||
-              option.product_name_fr ||
-              "Produit sans nom"
-            }
-            renderInput={(params) => (
+      <DialogContent>
+        {step === 1 ? (
+          <>
+            {/* Search Step */}
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}
+            >
               <TextField
-                {...params}
-                placeholder="Ex: Coca-Cola, Red Bull..."
-                variant="outlined"
+                fullWidth
+                placeholder="Rechercher un produit..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 InputProps={{
-                  ...params.InputProps,
                   startAdornment: (
                     <InputAdornment position="start">
                       <Search />
                     </InputAdornment>
                   ),
-                  endAdornment: (
-                    <>
-                      {loadingProducts ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
                 }}
               />
+              <Button onClick={handleSearch} disabled={searchLoading}>
+                {searchLoading ? <CircularProgress size={24} /> : "Rechercher"}
+              </Button>
+              {/* <Button
+                onClick={handleBarcodeSearch}
+                disabled={searchLoading}
+                startIcon={<QrCode />}
+              >
+                Code-barres
+              </Button> */}
+            </Box>
+
+            {searchError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {searchError}
+              </Alert>
             )}
-            renderOption={(props, option) => (
-              <li {...props} key={option.id || option.code}>
+
+            {searchResults.length > 0 && (
+              <List>
+                {searchResults.map((product) => (
+                  <ListItem key={product.code} disablePadding>
+                    <ListItemButton onClick={() => selectProduct(product)}>
+                      <ListItemAvatar>
+                        <Avatar
+                          src={product.imageUrl}
+                          alt={product.name}
+                          variant="rounded"
+                        >
+                          <LocalDrink />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={product.name}
+                        secondary={product.brand || "Marque inconnue"}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Details Step */}
+            <Box sx={{ mb: 3 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}
+              >
+                {selectedProduct.imageUrl && (
+                  <Avatar
+                    src={selectedProduct.imageUrl}
+                    alt={selectedProduct.name}
+                    variant="rounded"
+                    sx={{ width: 80, height: 80 }}
+                  />
+                )}
                 <Box>
-                  <Typography variant="body1">
-                    {option.product_name || option.product_name_fr}
-                  </Typography>
-                  {option.brands && (
-                    <Typography variant="caption" color="text.secondary">
-                      {option.brands}
+                  <Typography variant="h6">{selectedProduct.name}</Typography>
+                  {selectedProduct.brand && (
+                    <Typography variant="body2" color="text.secondary">
+                      {selectedProduct.brand}
                     </Typography>
                   )}
                 </Box>
-              </li>
-            )}
-            noOptionsText={
-              searchQuery.length < 2
-                ? "Tapez au moins 2 caractères..."
-                : "Aucun produit trouvé"
-            }
-          />
-        </Box>
+              </Box>
 
-        {/* Step 2: Product Details (shown when product is selected) */}
-        {selectedProduct && (
-          <>
-            <Box sx={{ mb: 3, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
-              <Typography variant="subtitle2" gutterBottom>
-                Produit sélectionné
-              </Typography>
-              <Typography variant="body1" fontWeight="bold">
-                {selectedProduct.product_name ||
-                  selectedProduct.product_name_fr}
-              </Typography>
-              {selectedProduct.brands && (
-                <Typography variant="body2" color="text.secondary">
-                  {selectedProduct.brands}
+              <Divider sx={{ my: 2 }} />
+
+              <TextField
+                fullWidth
+                required
+                label="Quantité (g/ml)"
+                type="number"
+                value={formData.quantity}
+                onChange={(e) =>
+                  setFormData({ ...formData, quantity: Number(e.target.value) })
+                }
+                sx={{ mb: 2 }}
+                inputProps={{ min: 1, step: 1 }}
+              />
+
+              <TextField
+                fullWidth
+                required
+                label="Lieu"
+                value={formData.location}
+                onChange={(e) =>
+                  setFormData({ ...formData, location: e.target.value })
+                }
+                placeholder="Ex: Maison, Bureau, Café..."
+                sx={{ mb: 2 }}
+              />
+
+              <TextField
+                fullWidth
+                label="Notes (optionnel)"
+                multiline
+                rows={2}
+                value={formData.notes}
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
+                sx={{ mb: 2 }}
+              />
+
+              {/* Nutrient Preview */}
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: "grey.50",
+                  borderRadius: 1,
+                  border: "1px solid",
+                  borderColor: "grey.200",
+                }}
+              >
+                <Typography variant="subtitle2" gutterBottom>
+                  Valeurs nutritionnelles ({formData.quantity}g/ml) :
                 </Typography>
-              )}
+                <Typography variant="body2">
+                  Caféine: {nutrients.caffeine.toFixed(1)} mg
+                </Typography>
+                <Typography variant="body2">
+                  Sucre: {nutrients.sugar.toFixed(1)} g
+                </Typography>
+                <Typography variant="body2">
+                  Calories: {nutrients.calories.toFixed(0)} kcal
+                </Typography>
+              </Box>
 
-              {calculatedNutrients && (
-                <Grid container spacing={2} sx={{ mt: 1 }}>
-                  <Grid item xs={4}>
-                    <Typography variant="caption" color="text.secondary">
-                      Sucre
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium">
-                      {calculatedNutrients.sugar.toFixed(1)} g
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={4}>
-                    <Typography variant="caption" color="text.secondary">
-                      Calories
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium">
-                      {calculatedNutrients.calories.toFixed(0)} kcal
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={4}>
-                    <Typography variant="caption" color="text.secondary">
-                      Caféine
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium">
-                      {calculatedNutrients.caffeine.toFixed(1)} mg
-                    </Typography>
-                  </Grid>
-                </Grid>
+              {formError && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {formError}
+                </Alert>
               )}
             </Box>
-
-            {/* Step 3: Consumption Details */}
-            <Typography variant="subtitle2" gutterBottom>
-              2. Détails de la consommation
-            </Typography>
-
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Quantité (ml)"
-                  type="number"
-                  value={quantity}
-                  onChange={(e) =>
-                    setQuantity(Math.max(1, parseFloat(e.target.value) || 0))
-                  }
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LocalCafe />
-                      </InputAdornment>
-                    ),
-                  }}
-                  helperText="Quantité consommée en millilitres"
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  required
-                  label="Lieu"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Ex: Maison, Bureau, Café..."
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Place />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={2}
-                  label="Notes (optionnel)"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Ajoutez des notes..."
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Notes />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-            </Grid>
           </>
         )}
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose} disabled={submitting}>
-          Annuler
-        </Button>
-        <Button
-          onClick={handleAddConsumption}
-          variant="contained"
-          disabled={!selectedProduct || !location.trim() || submitting}
-          startIcon={submitting && <CircularProgress size={20} />}
-        >
-          {submitting ? "Ajout..." : "Ajouter"}
-        </Button>
+        {step === 1 ? (
+          <Button onClick={handleClose}>Annuler</Button>
+        ) : (
+          <>
+            <Button onClick={() => setStep(1)}>Retour</Button>
+            <Button onClick={handleClose}>Annuler</Button>
+            <Button onClick={handleSubmit} disabled={submitting}>
+              {submitting ? (
+                <CircularProgress
+                  sx={{ backgroundColor: "var(--color-background)" }}
+                  size={24}
+                />
+              ) : (
+                "Ajouter"
+              )}
+            </Button>
+          </>
+        )}
       </DialogActions>
     </Dialog>
   );
