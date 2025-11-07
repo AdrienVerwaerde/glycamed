@@ -1,3 +1,4 @@
+// src/services/api.js
 import axios from "axios";
 import { API_URL } from "../config";
 
@@ -39,7 +40,6 @@ api.interceptors.response.use(
 
         return api(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, redirect to login
         localStorage.removeItem("accessToken");
         window.location.href = "/login";
         return Promise.reject(refreshError);
@@ -52,47 +52,66 @@ api.interceptors.response.use(
 
 // Auth API calls
 export const authAPI = {
-  // Login
   login: (credentials) => api.post("/auth/login", credentials),
-
-  // Register
   register: (userData) => api.post("/auth/register", userData),
-
-  // Logout
   logout: () => api.post("/auth/logout"),
-
-  // Get current user
   me: () => api.get("/auth/me"),
-
-  // Refresh token
   refresh: () => api.post("/auth/refresh"),
 };
 
 // Alert API calls
 export const alertAPI = {
-  // Get all alerts
   getAll: () => api.get("/alerts"),
-
-  // Get alert by ID
   getById: (id) => api.get(`/alerts/${id}`),
-
-  // Get alerts by type
   getByType: (type) => api.get(`/alerts/type/${type}`),
-
-  // Get alert statistics
   getStats: () => api.get("/alerts/stats"),
-
-  // Create alert
   create: (data) => api.post("/alerts", data),
-
-  // Update alert
   update: (id, data) => api.put(`/alerts/${id}`, data),
-
-  // Delete alert
   delete: (id) => api.delete(`/alerts/${id}`),
-
-  // Delete all alerts
   deleteAll: () => api.delete("/alerts"),
+};
+
+// Consumption API calls
+export const consumptionAPI = {
+  // Get all consumptions
+  getAll: () => api.get("/consumptions"),
+
+  // Get consumptions by user ID
+  getByUserId: (userId) => api.get(`/consumptions/user/${userId}`),
+
+  // Get user's consumption statistics
+  getUserStats: (userId) => api.get(`/consumptions/user/${userId}/stats`),
+
+  // Create consumption
+  create: (data) => api.post("/consumptions", data),
+
+  // Update consumption
+  update: (id, data) => api.put(`/consumptions/${id}`, data),
+
+  // Delete consumption
+  delete: (id) => api.delete(`/consumptions/${id}`),
+};
+
+// Products API calls
+export const productsAPI = {
+  // Search products in OpenFoodFacts
+  search: (query, page = 1, pageSize = 10) =>
+    api.get("/products/search", {
+      params: { q: query, page, pageSize },
+    }),
+
+  // Get product by barcode
+  getByBarcode: (barcode) => api.get(`/products/barcode/${barcode}`),
+};
+
+// User API calls
+export const userAPI = {
+  getAll: () => api.get("/users"),
+  getById: (id) => api.get(`/users/${id}`),
+  create: (data) => api.post("/users", data),
+  update: (id, data) => api.put(`/users/${id}`, data),
+  delete: (id) => api.delete(`/users/${id}`),
+  deactivate: (id) => api.put(`/users/${id}/deactivate`),
 };
 
 export default api;
