@@ -1,5 +1,4 @@
-// src/contexts/ConsumptionContext.jsx
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { consumptionAPI } from "../services/api";
 import { useAuth } from "./AuthContext";
 
@@ -36,7 +35,7 @@ export function ConsumptionProvider({ children }) {
     } catch (err) {
       console.error("Error fetching consumptions:", err);
       setError(err.response?.data?.error || err.message);
-      setConsumptions([]); // Set empty array on error
+      setConsumptions([]);
     } finally {
       setLoading(false);
     }
@@ -106,7 +105,7 @@ export function ConsumptionProvider({ children }) {
       calories: acc.calories + (curr.calories || 0),
       caffeine: acc.caffeine + (curr.caffeine || 0),
     }),
-    { sugar: 0, calories: 0, caffeine: 0 } // Default values
+    { sugar: 0, calories: 0, caffeine: 0 }
   );
 
   return (

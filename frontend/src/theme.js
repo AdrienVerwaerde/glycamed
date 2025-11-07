@@ -17,6 +17,13 @@ let theme = createTheme({
     },
   },
   components: {
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: "12px",
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
