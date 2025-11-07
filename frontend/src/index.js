@@ -7,13 +7,16 @@ import { ThemeProvider } from "@emotion/react";
 import theme from "./theme";
 import { AuthProvider } from "./contexts/AuthContext";
 import React from "react";
+import { ConsumptionProvider } from "./contexts/ConsumptionContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <ThemeProvider theme={theme}>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <ConsumptionProvider>
+          <App />
+        </ConsumptionProvider>
       </AuthProvider>
     </BrowserRouter>
   </ThemeProvider>
