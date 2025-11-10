@@ -1,5 +1,4 @@
-// src/components/AddConsumptionModal.jsx
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -41,7 +40,7 @@ export default function ConsumptionModal({ open, onClose }) {
 
   // Form state
   const [formData, setFormData] = useState({
-    quantity: 250,
+    quantity: "",
     location: "",
     notes: "",
   });
@@ -60,7 +59,7 @@ export default function ConsumptionModal({ open, onClose }) {
     onClose();
   };
 
-  // Search products via YOUR backend
+  // Search products via backend
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
       setSearchError("Veuillez entrer un terme de recherche");
