@@ -10,18 +10,54 @@ const OFF_BASE_URL =
 
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 jours
 
+function toNumber(v: unknown): number | undefined {
+  const n = typeof v === "string" ? Number(v) : (v as number);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+function kcalFromKJ(kj?: number) {
+  return typeof kj === "number" ? kj / 4.184 : undefined;
+}
+
 function normalize(off: OffProduct) {
   const nutr = off.nutriments ?? {};
+
+  // Energy kcal per 100ml/100g with fallbacks from kJ
+  const energy_kcal_100g =
+    toNumber((nutr as any)["energy-kcal_100g"]) ??
+    toNumber((nutr as any).energy_kcal_100g) ??
+    kcalFromKJ(toNumber((nutr as any).energy_100g));
+
+  const energy_kcal_100ml =
+    toNumber((nutr as any)["energy-kcal_100ml"]) ??
+    toNumber((nutr as any).energy_kcal_100ml) ??
+    kcalFromKJ(toNumber((nutr as any).energy_100ml));
+
+  // Sugars
+  const sugars_100g = toNumber(nutr.sugars_100g);
+  const sugars_100ml = toNumber((nutr as any).sugars_100ml);
+
+  // Caffeine (value + unit)
+  const caffeine_unit = (nutr as any).caffeine_unit || "mg";
+  const caffeine_100g = toNumber((nutr as any).caffeine_100g);
+  const caffeine_100ml = toNumber((nutr as any).caffeine_100ml);
+  const caffeine_serving = toNumber((nutr as any).caffeine_serving);
+
   return {
     code: off.code,
     name: off.product_name ?? "Produit sans nom",
     brand: off.brands,
     imageUrl: off.image_url,
-    servingSize: off.serving_size,
+    servingSize: off.serving_size, // raw OFF string
     nutriments: {
-      sugars_100g: nutr.sugars_100g,
-      caffeine_100g: nutr.caffeine_100g,
-      energy_kcal_100g: (nutr as any)["energy-kcal_100g"],
+      sugars_100g,
+      sugars_100ml,
+      caffeine_100g,
+      caffeine_100ml,
+      caffeine_serving,
+      caffeine_unit, // "mg" | "g"
+      energy_kcal_100g,
+      energy_kcal_100ml,
     },
     categories: off.categories_tags ?? [],
   };
@@ -86,10 +122,26 @@ export async function searchProducts(query: string, page = 1, pageSize = 10) {
       name: p.product_name ?? "Produit",
       brand: p.brands,
       imageUrl: p.image_url,
+      servingSize: p.serving_size,
       nutriments: {
         sugars_100g: p.nutriments?.sugars_100g,
-        caffeine_100g: p.nutriments?.caffeine_100g,
-        energy_kcal_100g: (p.nutriments as any)?.["energy-kcal_100g"],
+        sugars_100ml: (p.nutriments as any)?.sugars_100ml,
+        caffeine_100g: (p.nutriments as any)?.caffeine_100g,
+        caffeine_100ml: (p.nutriments as any)?.caffeine_100ml,
+        caffeine_serving: (p.nutriments as any)?.caffeine_serving,
+        caffeine_unit: (p.nutriments as any)?.caffeine_unit || "mg",
+        energy_kcal_100g:
+          (p.nutriments as any)?.["energy-kcal_100g"] ??
+          (p.nutriments as any)?.energy_kcal_100g ??
+          ((p.nutriments as any)?.energy_100g
+            ? (p.nutriments as any).energy_100g / 4.184
+            : undefined),
+        energy_kcal_100ml:
+          (p.nutriments as any)?.["energy-kcal_100ml"] ??
+          (p.nutriments as any)?.energy_kcal_100ml ??
+          ((p.nutriments as any)?.energy_100ml
+            ? (p.nutriments as any).energy_100ml / 4.184
+            : undefined),
       },
     })),
   };

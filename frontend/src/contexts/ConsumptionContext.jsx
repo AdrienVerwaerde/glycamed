@@ -43,7 +43,7 @@ export function ConsumptionProvider({ children }) {
 
   const addConsumption = async (consumptionData) => {
     if (!user?.id) {
-      throw new Error("User not authenticated");
+      throw new Error("Veuillez vous identifier pour poster");
     }
 
     try {
@@ -52,11 +52,13 @@ export function ConsumptionProvider({ children }) {
         quantity: consumptionData.quantity,
         location: consumptionData.location,
         userId: user.id,
-        caffeine: consumptionData.nutriments?.caffeine_100g || 0,
-        sugar: consumptionData.nutriments?.sugars_100g || 0,
-        calories: consumptionData.nutriments?.["energy-kcal_100g"] || 0,
+        caffeine: consumptionData.caffeine,
+        sugar: consumptionData.sugar,
+        calories: consumptionData.calories,
         notes: consumptionData.notes || "",
       };
+
+      console.log("📤 Sending to backend:", payload);
 
       const { data } = await consumptionAPI.create(payload);
       const newConsumption = data.data;
