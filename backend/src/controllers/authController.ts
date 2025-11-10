@@ -43,7 +43,7 @@ export const register = async (req: Request, res: Response) => {
   if (!parsed.success) {
     return res.status(400).json({
       success: false,
-      error: "Validation error",
+      error: "Informations erronées",
       details: parsed.error.flatten(),
     });
   }
@@ -92,8 +92,7 @@ export const login = async (req: Request, res: Response) => {
   if (!parsed.success) {
     return res.status(400).json({
       success: false,
-      error: "Validation error",
-      errorCode: "VALIDATION_ERROR",
+      error: "Informations manquantes",
       details: parsed.error.flatten(),
     });
   }
@@ -101,20 +100,16 @@ export const login = async (req: Request, res: Response) => {
 
   const user = await User.findOne({ email: email.toLowerCase() });
   if (!user) {
-    return res.status(404).json({
-      success: false,
-      error: "User not found",
-      errorCode: "USER_NOT_FOUND",
-    });
+    return res
+      .status(401)
+      .json({ success: false, error: "Utilisateur inconnu" });
   }
 
-  const valid = await user.comparePassword(password);
-  if (!valid) {
-    return res.status(401).json({
-      success: false,
-      error: "Invalid credentials",
-      errorCode: "INVALID_CREDENTIALS",
-    });
+  const ok = await user.comparePassword(password);
+  if (!ok) {
+    return res
+      .status(401)
+      .json({ success: false, error: "Mot de passe erroné" });
   }
 
   const access = signAccessToken({

@@ -6,7 +6,9 @@ const router = Router();
 const controller = new ProductsController();
 
 // router.use(authMiddleware); // toutes les routes protégées (plus tard)
-router.get("/products/barcode/:barcode", controller.getByBarcode.bind(controller));
-router.get("/products/search", controller.search.bind(controller));
+router.get("/search", (req, res) => controller.search(req, res));
+router.get("/barcode/:barcode", (req, res) =>
+  controller.getByBarcode(req, res)
+);
 
 export default router;

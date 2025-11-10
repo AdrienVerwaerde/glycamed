@@ -1,23 +1,22 @@
-import express from 'express';
+import { Router } from "express";
 import {
-    getAllUsers,
-    getUserById,
-    createUser,
-    updateUser,
-    deleteUser,
-} from '../controllers/userController';
+  getAllUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+} from "../controllers/userController";
 import { auth } from "../middleware/auth";
 
-const router = express.Router();
+const router = Router();
 
-// CRUD protégé (admin)
-router.route("/")
-  .get(auth(["admin"]), getAllUsers)
-  .post(auth(["admin"]), createUser);
+// Public route - No authentication needed for registration
+router.post("/", createUser);
 
-router.route("/:id")
-  .get(auth(["admin"]), getUserById)
-  .put(auth(["admin"]), updateUser)
-  .delete(auth(["admin"]), deleteUser);
+// Protected routes - Require authentication
+router.get("/", auth(["admin"]), getAllUsers);
+router.get("/:id", auth(), getUserById);
+router.put("/:id", auth(), updateUser);
+router.delete("/:id", auth(["admin"]), deleteUser);
 
 export default router;
