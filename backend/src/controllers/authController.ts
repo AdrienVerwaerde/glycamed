@@ -41,13 +41,11 @@ function parseRefreshMaxAge() {
 export const register = async (req: Request, res: Response) => {
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        error: "Validation error",
-        details: parsed.error.flatten(),
-      });
+    return res.status(400).json({
+      success: false,
+      error: "Informations erronées",
+      details: parsed.error.flatten(),
+    });
   }
   const { email, password, username, role } = parsed.data;
 
@@ -92,13 +90,11 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        error: "Validation error",
-        details: parsed.error.flatten(),
-      });
+    return res.status(400).json({
+      success: false,
+      error: "Informations manquantes",
+      details: parsed.error.flatten(),
+    });
   }
   const { email, password } = parsed.data;
 
@@ -109,14 +105,14 @@ export const login = async (req: Request, res: Response) => {
   if (!user) {
     return res
       .status(401)
-      .json({ success: false, error: "Invalid credentials" });
+      .json({ success: false, error: "Utilisateur inconnu" });
   }
 
   const ok = await user.comparePassword(password);
   if (!ok) {
     return res
       .status(401)
-      .json({ success: false, error: "Invalid credentials" });
+      .json({ success: false, error: "Mot de passe erroné" });
   }
 
   const access = signAccessToken({

@@ -1,7 +1,12 @@
 import { ProductModel } from "../models/Product";
-import type { OffProduct, OffProductResponse, OffSearchResponse } from "../types/dtos/open-food-facts";
+import type {
+  OffProduct,
+  OffProductResponse,
+  OffSearchResponse,
+} from "../types/dtos/open-food-facts";
 
-const OFF_BASE_URL = process.env.OFF_BASE_URL ?? "https://world.openfoodfacts.org";
+const OFF_BASE_URL =
+  process.env.OFF_BASE_URL ?? "https://world.openfoodfacts.org";
 
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 jours
 
@@ -26,12 +31,15 @@ export async function fetchProductByBarcode(barcode: string) {
   // 1) Cache
   const existing = await ProductModel.findOne({ code: barcode });
   if (existing) {
-    const tooOld = Date.now() - existing.lastFetchedAt.getTime() > REFRESH_TTL_MS;
+    const tooOld =
+      Date.now() - existing.lastFetchedAt.getTime() > REFRESH_TTL_MS;
     if (!tooOld) return existing;
   }
 
   // 2) OFF
-  const url = `${OFF_BASE_URL}/api/v0/product/${encodeURIComponent(barcode)}.json`;
+  const url = `${OFF_BASE_URL}/api/v0/product/${encodeURIComponent(
+    barcode
+  )}.json`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`OFF error: ${res.status} ${res.statusText}`);
   const data = (await res.json()) as OffProductResponse;
@@ -63,7 +71,8 @@ export async function searchProducts(query: string, page = 1, pageSize = 10) {
   url.searchParams.set("page_size", String(pageSize));
 
   const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`OFF search error: ${res.status} ${res.statusText}`);
+  if (!res.ok)
+    throw new Error(`OFF search error: ${res.status} ${res.statusText}`);
 
   const data = (await res.json()) as OffSearchResponse;
 
@@ -72,7 +81,7 @@ export async function searchProducts(query: string, page = 1, pageSize = 10) {
     count: data.count,
     page: data.page,
     pageCount: data.page_count,
-    products: (data.products ?? []).map(p => ({
+    products: (data.products ?? []).map((p) => ({
       code: p.code,
       name: p.product_name ?? "Produit",
       brand: p.brands,
@@ -81,7 +90,7 @@ export async function searchProducts(query: string, page = 1, pageSize = 10) {
         sugars_100g: p.nutriments?.sugars_100g,
         caffeine_100g: p.nutriments?.caffeine_100g,
         energy_kcal_100g: (p.nutriments as any)?.["energy-kcal_100g"],
-      }
+      },
     })),
   };
 }
