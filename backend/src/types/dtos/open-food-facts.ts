@@ -12,14 +12,14 @@ export interface OffProduct {
   product_name?: string;
   brands?: string;
   image_url?: string;
-  serving_size?: string; 
+  serving_size?: string;
   nutriments?: OffNutriments;
   categories_tags?: string[];
-  quantity?: string; 
+  quantity?: string;
 }
 
 export interface OffProductResponse {
-  status: 0 | 1;    
+  status: 0 | 1;
   code: string;
   product?: OffProduct;
 }

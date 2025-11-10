@@ -1,15 +1,26 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
-import Button from "@mui/material/Button";
 import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
+import links from "../../../lib/data/links";
+import { Link, Link as RouterLink, useNavigate } from "react-router-dom";
+import Divider from "@mui/material/Divider";
+import { useAuth } from "../../../contexts/AuthContext";
+import Button from "@mui/material/Button";
 
 export default function AnchorTemporaryDrawer() {
+  const { logout, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
   const [state, setState] = React.useState({
     top: false,
     left: false,
@@ -37,15 +48,25 @@ export default function AnchorTemporaryDrawer() {
         color: "var(--color-yellow)",
         display: "flex",
         flexDirection: "column",
+        alignItems: "center",
+        pt: 8,
       }}
       role="presentation"
-      onClick={toggleDrawer(anchor, false)}
-      onKeyDown={toggleDrawer(anchor, false)}
     >
+      <CloseIcon
+        onClick={toggleDrawer(anchor, false)}
+        sx={{
+          color: "var(--color-yellow)",
+          position: "absolute",
+          top: 15,
+          right: 25,
+          fontSize: "32px",
+        }}
+      />
       <List>
-        {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
+        {links.map((link) => (
           <ListItem
-            key={text}
+            key={link.id}
             disablePadding
             sx={{
               display: "flex",
@@ -53,29 +74,61 @@ export default function AnchorTemporaryDrawer() {
               justifyContent: "center",
             }}
           >
-            <ListItemButton>
-              <ListItemText primary={text} sx={{ textAlign: "center" }} />
+            <ListItemButton
+              component={RouterLink}
+              to={link.url}
+              onClick={toggleDrawer(anchor, false)}
+            >
+              <ListItemText primary={link.title} sx={{ textAlign: "center" }} />
             </ListItemButton>
           </ListItem>
         ))}
       </List>
-      <Divider variant="middle" sx={{ borderColor: "var(--color-white)" }} />
+
+      <Divider
+        sx={{
+          backgroundColor: "var(--color-yellow)",
+          borderWidth: "1px",
+          width: "80%",
+          my: 2,
+        }}
+      />
+
       <List>
-        {["Profil", "Deconnexion"].map((text, index) => (
-          <ListItem
-            key={text}
-            disablePadding
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <ListItemButton>
-              <ListItemText primary={text} sx={{ textAlign: "center" }} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        <ListItem
+          disablePadding
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {isAuthenticated ? (
+            <Button
+              sx={{
+                backgroundColor: "var(--color-red)",
+                color: "var(--color-white)",
+                width: "100%",
+                mt: 1,
+              }}
+              onClick={(e) => {
+                handleLogout();
+                toggleDrawer(anchor, false)(e);
+              }}
+            >
+              Déconnexion
+            </Button>
+          ) : (
+            <Button
+              sx={{ width: "100%", mt: 1 }}
+              component={Link}
+              to="/login"
+              onClick={toggleDrawer(anchor, false)}
+            >
+              Connexion
+            </Button>
+          )}
+        </ListItem>
       </List>
     </Box>
   );
@@ -83,20 +136,15 @@ export default function AnchorTemporaryDrawer() {
   return (
     <Box>
       {["right"].map((anchor) => (
-        <Box key={anchor}>
-          <Button
+        <Box key={anchor} sx={{ display: "flex", alignItems: "center" }}>
+          <MenuIcon
             onClick={toggleDrawer(anchor, true)}
             sx={{
               color: "var(--color-yellow)",
-              backgroundColor: "transparent",
-              minWidth: "auto",
+              fontSize: "32px",
+              pr: "22px",
             }}
-            disableFocusRipple
-            disableRipple
-            disableTouchRipple
-          >
-            <MenuIcon sx={{ fontSize: "30px" }} />
-          </Button>
+          />
           <Drawer
             anchor={anchor}
             open={state[anchor]}
