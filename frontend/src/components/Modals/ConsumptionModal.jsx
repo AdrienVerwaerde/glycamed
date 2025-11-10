@@ -22,6 +22,7 @@ import {
 import { Search, QrCode, LocalDrink } from "@mui/icons-material";
 import { productsAPI } from "../../services/api";
 import { useConsumption } from "../../contexts/ConsumptionContext";
+import { parseServingSize } from "../../lib/utils/servingSizeParser";
 
 export default function ConsumptionModal({ open, onClose }) {
   const { addConsumption } = useConsumption();
@@ -129,6 +130,11 @@ export default function ConsumptionModal({ open, onClose }) {
   // Select product and move to step 2
   const selectProduct = (product) => {
     setSelectedProduct(product);
+    const parsed = parseServingSize(product.servingSize);
+    setFormData((prev) => ({
+      ...prev,
+      quantity: parsed ?? 100, // default to 100
+    }));
     setStep(2);
   };
 
@@ -136,28 +142,38 @@ export default function ConsumptionModal({ open, onClose }) {
   const calculateNutrients = () => {
     if (!selectedProduct) return { caffeine: 0, sugar: 0, calories: 0 };
 
-    const factor = formData.quantity / 100;
+    const q = Number(formData.quantity) || 0;
+    const n = selectedProduct.nutriments || {};
+
+    // Choose the right base per 100 unit
+    const sugarPer100 = n.sugars_100ml ?? n.sugars_100g ?? 0;
+    const kcalPer100 = n.energy_kcal_100ml ?? n.energy_kcal_100g ?? 0;
+
+    // Caffeine: prefer per 100ml/g, then serving; normalize to mg
+    const cafUnit = (n.caffeine_unit || "mg").toLowerCase();
+    const toMg = (val) => {
+      if (!val) return 0;
+      return cafUnit === "g" ? val * 1000 : val; // assume mg if not "g"
+    };
+
+    let caffeinePer100 = toMg(n.caffeine_100ml) || toMg(n.caffeine_100g) || 0;
+    if (!caffeinePer100 && n.caffeine_serving && q > 0) {
+      const per1 = toMg(n.caffeine_serving) / q;
+      caffeinePer100 = per1 * 100;
+    }
+
+    const factor = q / 100;
+
     return {
-      caffeine: (selectedProduct.nutriments?.caffeine_100g || 0) * factor,
-      sugar: (selectedProduct.nutriments?.sugars_100g || 0) * factor,
-      calories:
-        (selectedProduct.nutriments?.["energy-kcal_100g"] || 0) * factor,
+      caffeine: caffeinePer100 * factor,
+      sugar: sugarPer100 * factor,
+      calories: kcalPer100 * factor,
     };
   };
 
   // Submit consumption
   const handleSubmit = async () => {
     // Validation
-    if (!formData.location.trim()) {
-      setFormError("Veuillez spécifier un lieu");
-      return;
-    }
-
-    if (formData.quantity <= 0) {
-      setFormError("La quantité doit être supérieure à 0");
-      return;
-    }
-
     setSubmitting(true);
     setFormError("");
 
@@ -171,12 +187,10 @@ export default function ConsumptionModal({ open, onClose }) {
         quantity: formData.quantity,
         location: formData.location,
         notes: formData.notes,
-        nutriments: {
-          caffeine_100g: selectedProduct.nutriments?.caffeine_100g || 0,
-          sugars_100g: selectedProduct.nutriments?.sugars_100g || 0,
-          "energy-kcal_100g":
-            selectedProduct.nutriments?.["energy-kcal_100g"] || 0,
-        },
+        caffeine: Number(nutrients.caffeine.toFixed(1)),
+        sugar: Number(nutrients.sugar.toFixed(1)),
+        calories: Math.round(nutrients.calories),
+        nutriments: selectedProduct.nutriments,
       });
 
       handleClose();
@@ -199,7 +213,7 @@ export default function ConsumptionModal({ open, onClose }) {
       <DialogContent>
         {step === 1 ? (
           <>
-            {/* Search Step */}
+            {/* Search */}
             <Box
               sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}
             >
@@ -261,7 +275,7 @@ export default function ConsumptionModal({ open, onClose }) {
           </>
         ) : (
           <>
-            {/* Details Step */}
+            {/* Details */}
             <Box sx={{ mb: 3 }}>
               <Box
                 sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}
@@ -289,7 +303,7 @@ export default function ConsumptionModal({ open, onClose }) {
               <TextField
                 fullWidth
                 required
-                label="Quantité (g/ml)"
+                label="Quantité (ml)"
                 type="number"
                 value={formData.quantity}
                 onChange={(e) =>
@@ -307,7 +321,6 @@ export default function ConsumptionModal({ open, onClose }) {
                 onChange={(e) =>
                   setFormData({ ...formData, location: e.target.value })
                 }
-                placeholder="Ex: Maison, Bureau, Café..."
                 sx={{ mb: 2 }}
               />
 
@@ -323,12 +336,12 @@ export default function ConsumptionModal({ open, onClose }) {
                 sx={{ mb: 2 }}
               />
 
-              {/* Nutrient Preview */}
+              {/* Nutrient */}
               <Box
                 sx={{
                   p: 2,
                   bgcolor: "grey.50",
-                  borderRadius: 1,
+                  borderRadius: "12px",
                   border: "1px solid",
                   borderColor: "grey.200",
                 }}

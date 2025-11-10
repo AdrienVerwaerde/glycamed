@@ -27,6 +27,7 @@ export interface OffProductResponse {
 export interface OffSearchHit {
   code: string;
   product_name?: string;
+  serving_size?: string;
   brands?: string;
   image_url?: string;
   nutriments?: OffNutriments;

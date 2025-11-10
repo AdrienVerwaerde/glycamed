@@ -126,7 +126,7 @@ export const createConsumption = async (
     if (!product || !quantity || !location || !userId) {
       res.status(400).json({
         success: false,
-        error: "Please provide product, quantity, location, and userId",
+        error: "Veuillez saisir tous les champs",
       });
       return;
     }
@@ -136,7 +136,7 @@ export const createConsumption = async (
     if (!user) {
       res.status(404).json({
         success: false,
-        error: "User not found",
+        error: "Utilisateur inconnu",
       });
       return;
     }
@@ -145,7 +145,7 @@ export const createConsumption = async (
     if (quantity <= 0) {
       res.status(400).json({
         success: false,
-        error: "Quantity must be greater than 0",
+        error: "La quantité ne peut pas être 0 ou moins",
       });
       return;
     }
@@ -153,7 +153,7 @@ export const createConsumption = async (
     if (caffeine < 0 || sugar < 0 || calories < 0) {
       res.status(400).json({
         success: false,
-        error: "Caffeine, sugar, and calories cannot be negative",
+        error: "Caféine, sucre et calories doivent avoir une valeur positive",
       });
       return;
     }
