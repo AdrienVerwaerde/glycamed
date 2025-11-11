@@ -98,7 +98,8 @@ export const login = async (req: Request, res: Response) => {
   }
   const { email, password } = parsed.data;
 
-  const user = await User.findOne({ email: email.toLowerCase() });
+  const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+  
   if (!user) {
     return res
       .status(401)
