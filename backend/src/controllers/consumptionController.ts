@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Consumption, { IConsumption } from "../models/Consumption";
 import User from "../models/User";
+import Alert, { AlertType } from "../models/Alert";
 
 // @desc    Get all consumptions
 // @route   GET /api/consumptions
@@ -402,8 +403,6 @@ export const getUserConsumptionStats = async (
   }
 };
 
-// À AJOUTER à la fin de backend/src/controllers/consumptionController.ts
-
 // @desc    Get Amed's consumption statistics for today
 // @route   GET /api/consumptions/amed/today
 // @access  Public
@@ -471,3 +470,92 @@ export const getAmedTodayStats = async (
     });
   }
 };
+
+// @desc    Check and create alert if thresholds exceeded
+// @route   POST /api/consumptions/amed/check-alert
+// @access  Private (appelé automatiquement après ajout de consommation)
+export const checkAndCreateAlert = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const SUGAR_THRESHOLD = 50;
+    const CAFFEINE_THRESHOLD = 400;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const consumptions = await Consumption.find({
+      createdAt: {
+        $gte: today,
+        $lt: tomorrow,
+      },
+    });
+
+    const totals = consumptions.reduce(
+      (acc, consumption) => {
+        acc.sugar += consumption.sugar || 0;
+        acc.caffeine += consumption.caffeine || 0;
+        return acc;
+      },
+      { sugar: 0, caffeine: 0 }
+    );
+
+    const sugarExceeded = totals.sugar > SUGAR_THRESHOLD;
+    const caffeineExceeded = totals.caffeine > CAFFEINE_THRESHOLD;
+
+    if (!sugarExceeded && !caffeineExceeded) {
+      await Alert.deleteOne({ date: today });
+      res.status(200).json({
+        success: true,
+        data: {
+          alertCreated: false,
+          message: "Seuils non dépassés",
+          totals,
+        },
+      });
+      return;
+    }
+
+    let alertType: AlertType;
+    if (sugarExceeded && caffeineExceeded) {
+      alertType = AlertType.BOTH;
+    } else if (sugarExceeded) {
+      alertType = AlertType.SUGAR;
+    } else {
+      alertType = AlertType.CAFFEINE;
+    }
+
+    const alert = await Alert.findOneAndUpdate(
+      { date: today },
+      {
+        type: alertType,
+        caffeineAmount: totals.caffeine,
+        sugarAmount: totals.sugar,
+      },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        alertCreated: true,
+        alert,
+        totals,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: "Server Error",
+      message: error.message,
+    });
+  }
+};
+

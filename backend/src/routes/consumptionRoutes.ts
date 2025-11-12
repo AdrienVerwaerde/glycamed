@@ -8,12 +8,16 @@ import {
   deleteConsumption,
   getUserConsumptionStats,
   getAmedTodayStats,
+  checkAndCreateAlert,
 } from "../controllers/consumptionController";
 
 const router = express.Router();
 
 // Amed specific routes
 router.route("/amed/today").get(getAmedTodayStats); 
+
+// Alert checking route
+router.post("/amed/check-alert", checkAndCreateAlert); 
 
 // Base routes
 router.route("/").get(getAllConsumptions).post(createConsumption);
