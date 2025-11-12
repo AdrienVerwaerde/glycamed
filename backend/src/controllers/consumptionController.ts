@@ -401,3 +401,73 @@ export const getUserConsumptionStats = async (
     });
   }
 };
+
+// À AJOUTER à la fin de backend/src/controllers/consumptionController.ts
+
+// @desc    Get Amed's consumption statistics for today
+// @route   GET /api/consumptions/amed/today
+// @access  Public
+export const getAmedTodayStats = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const amedUser = await User.findOne({ role: "amed" });
+
+    if (!amedUser) {
+      res.status(404).json({
+        success: false,
+        error: "Utilisateur Amed non trouvé",
+      });
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const consumptions = await Consumption.find({
+      userId: amedUser._id,
+      createdAt: {
+        $gte: today,
+        $lt: tomorrow,
+      },
+    })
+      .populate("userId", "username email")
+      .sort({ createdAt: -1 });
+
+    const totals = consumptions.reduce(
+      (acc, consumption) => {
+        acc.sugar += consumption.sugar || 0;
+        acc.caffeine += consumption.caffeine || 0;
+        acc.calories += consumption.calories || 0;
+        return acc;
+      },
+      { sugar: 0, caffeine: 0, calories: 0 }
+    );
+
+    const uniqueContributors = new Set(
+      consumptions.map((c: any) => c.userId?._id?.toString()).filter(Boolean)
+    );
+
+    const contributorsCount = consumptions.length;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totals,
+        contributorsCount: uniqueContributors.size,
+        consumptionsCount: consumptions.length,
+        consumptions: consumptions.slice(0, 10),
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: "Server Error",
+      message: error.message,
+    });
+  }
+};

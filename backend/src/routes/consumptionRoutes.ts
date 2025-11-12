@@ -7,9 +7,13 @@ import {
   updateConsumption,
   deleteConsumption,
   getUserConsumptionStats,
+  getAmedTodayStats,
 } from "../controllers/consumptionController";
 
 const router = express.Router();
+
+// Amed specific routes
+router.route("/amed/today").get(getAmedTodayStats); 
 
 // Base routes
 router.route("/").get(getAllConsumptions).post(createConsumption);
