@@ -20,16 +20,19 @@ import {
   LocalDrink,
   Assessment,
   AccessTime,
+  Warning,
 } from "@mui/icons-material";
 import Gauge from "../components/Gauge/Gauge";
 import StatsCard from "../components/Stats/StatsCard";
 import HealthStatus from "../components/Health/HealthStatus";
-import { consumptionAPI } from "../services/api";
+import AlertBadge from "../components/Alerts/AlertBadge";
+import { consumptionAPI, alertAPI } from "../services/api";
 
 export default function AmedPage() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [alertStats, setAlertStats] = useState(null);
 
   const limits = {
     sugar: 50,
@@ -39,8 +42,12 @@ export default function AmedPage() {
 
   useEffect(() => {
     fetchStats();
+    fetchAlertStats();
     // Rafraîchir toutes les 30 secondes
-    const interval = setInterval(fetchStats, 30000);
+    const interval = setInterval(() => {
+      fetchStats();
+      fetchAlertStats();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -55,6 +62,15 @@ export default function AmedPage() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAlertStats = async () => {
+    try {
+      const response = await alertAPI.getConsecutive();
+      setAlertStats(response.data.data);
+    } catch (error) {
+      console.error("Error fetching alert stats:", error);
     }
   };
 
@@ -83,21 +99,28 @@ export default function AmedPage() {
         </Alert>
       )}
 
-      {/* En-tête */}
-      <Box sx={{ mb: 4 }}>
+      {/* En-tête avec badge d'alerte */}
+      <Box
+        display="flex"
+        alignItems="center"
+        gap={2}
+        sx={{ mb: 4 }}
+        flexWrap="wrap"
+      >
         <Typography
           variant="h3"
           component="h1"
-          gutterBottom
           fontWeight="bold"
           color="#ffffff"
         >
-          Dashboard d'Amed 📊
+          Dashboard d'Amed 🎯
         </Typography>
-        <Typography variant="subtitle1" color="#ffffff">
-          Suivi en temps réel de la consommation d'aujourd'hui
-        </Typography>
+        <AlertBadge />
       </Box>
+
+      <Typography variant="subtitle1" color="#ffffff" sx={{ mb: 4 }}>
+        Suivi en temps réel de la consommation d'aujourd'hui
+      </Typography>
 
       {/* Statut de santé */}
       <Box sx={{ mb: 4 }}>
@@ -141,6 +164,35 @@ export default function AmedPage() {
             color="#4caf50"
           />
         </Grid>
+
+        {/* Nouvelle carte : Jours consécutifs en alerte */}
+        {alertStats && (
+          <Grid item xs={12} sm={6} md={3}>
+            <StatsCard
+              icon={<Warning />}
+              label="Jours d'alerte consécutifs"
+              value={alertStats.consecutiveDays}
+              subtitle={
+                alertStats.currentStreak
+                  ? "⚠️ Série en cours"
+                  : "✅ Pas d'alerte aujourd'hui"
+              }
+              color={alertStats.currentStreak ? "#f44336" : "#4caf50"}
+            />
+          </Grid>
+        )}
+
+        {/* Carte : Nombre de contributeurs */}
+        {stats?.contributorsCount !== undefined && (
+          <Grid item xs={12} sm={6} md={3}>
+            <StatsCard
+              icon="👥"
+              label="Contributeurs aujourd'hui"
+              value={stats.contributorsCount}
+              color="#9c27b0"
+            />
+          </Grid>
+        )}
       </Grid>
 
       {/* Jauges principales */}

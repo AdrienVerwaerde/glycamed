@@ -64,6 +64,14 @@ export function ConsumptionProvider({ children }) {
       const newConsumption = data.data;
 
       setConsumptions([newConsumption, ...consumptions]);
+
+      try {
+        await consumptionAPI.checkAlert();
+        console.log("Alert check completed");
+      } catch (alertErr) {
+        console.warn("Alert check failed (non-blocking):", alertErr);
+      }
+
       return newConsumption;
     } catch (err) {
       console.error("Error adding consumption:", err);
@@ -92,6 +100,13 @@ export function ConsumptionProvider({ children }) {
     try {
       await consumptionAPI.delete(id);
       setConsumptions(consumptions.filter((c) => c._id !== id));
+
+      try {
+        await consumptionAPI.checkAlert();
+        console.log("Alert check after deletion completed");
+      } catch (alertErr) {
+        console.warn("Alert check failed (non-blocking):", alertErr);
+      }
     } catch (err) {
       console.error("Error removing consumption:", err);
       const errorMessage = err.response?.data?.error || err.message;
