@@ -82,6 +82,9 @@ export const consumptionAPI = {
   // Get user's consumption statistics
   getUserStats: (userId) => api.get(`/consumptions/user/${userId}/stats`),
 
+  // Get Amed's statistics for today
+  getAmedTodayStats: () => api.get("/consumptions/amed/today"),
+
   // Create consumption
   create: (data) => api.post("/consumptions", data),
 
