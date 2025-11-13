@@ -33,18 +33,18 @@ export function ConsumptionProvider({ children }) {
 
       const { data } = await consumptionAPI.getTodayConsumptions();
 
-      // ✅ Handle both empty and populated responses
+      // Handle both empty and populated responses
       const fetchedConsumptions = data.data?.consumptions || [];
 
       console.log(`✅ Found ${fetchedConsumptions.length} consumptions today`);
 
       setConsumptions(fetchedConsumptions);
     } catch (err) {
-      console.error("❌ Error fetching today's consumptions:", err);
+      console.error("Error fetching today's consumptions:", err);
 
       // ✅ Only set error for real errors (not 404 or empty data)
       if (err.response?.status === 404 || err.response?.status === 204) {
-        console.log("ℹ️ No consumptions found for today");
+        console.log("No consumptions found for today");
         setConsumptions([]);
         setError(null);
       } else {

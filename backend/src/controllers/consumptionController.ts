@@ -425,7 +425,7 @@ export const getTodayConsumptions = async (
       },
     }).sort({ createdAt: -1 });
 
-    // ✅ Always return valid data, even if empty
+    // Always return valid data, even if empty
     const totals =
       consumptions.length > 0
         ? consumptions.reduce(
@@ -436,13 +436,13 @@ export const getTodayConsumptions = async (
             }),
             { caffeine: 0, sugar: 0, calories: 0 }
           )
-        : { caffeine: 0, sugar: 0, calories: 0 }; // ✅ Default to zeros
+        : { caffeine: 0, sugar: 0, calories: 0 }; // Default to zeros
 
     res.status(200).json({
       success: true,
       data: {
-        consumptions, // ✅ Empty array if none
-        totals, // ✅ Zeros if none
+        consumptions, // Empty array if none
+        totals, // Zeros if none
         count: consumptions.length,
       },
     });

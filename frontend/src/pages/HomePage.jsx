@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Box, Button, Grid, CircularProgress, Card } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  CircularProgress,
+  Card,
+  Typography,
+  Divider,
+} from "@mui/material";
 import {
   Add,
   LocalDrink,
@@ -35,8 +43,24 @@ export default function HomePage() {
   }
 
   return (
-    <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
-      <Card sx={{ mt: 10, mx: 2, p: 4 }}>
+    <Box
+      sx={{
+        width: "100%",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 4,
+        flexDirection: "column",
+        justifyContent: "center",
+        mt: 10,
+        mb: 2,
+      }}
+    >
+      {/* Today's consumptions card  */}
+      <Card sx={{ mx: 2, p: 4 }}>
+        <Typography variant="h4" sx={{ mb: 2 }}>
+          Consos du jour
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
         <Grid container spacing={2} sx={{ justifyContent: "center" }}>
           <Grid item xs={12} md={4} sx={{ width: "100%" }}>
             <Gauge
@@ -79,10 +103,53 @@ export default function HomePage() {
           Ajouter une consommation
         </Button>
 
+        {/* Modal to add consumption  */}
         <ConsumptionModal
           open={modalOpen}
           onClose={() => setModalOpen(false)}
         />
+      </Card>
+
+      {/* Consumptions recap card */}
+      <Card sx={{ mx: 2, p: 4 }}>
+        <Typography variant="h4" sx={{ mb: 2 }}>
+          Récap consos
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Grid container spacing={2} sx={{ justifyContent: "center" }}>
+          <Grid item xs={12} md={4} sx={{ width: "100%" }}>
+            <Gauge
+              label="Sucre"
+              amount={totals?.sugar ?? 0}
+              max={limits.sugar}
+              unit="g"
+              icon={<Opacity />}
+              thresholds={{ low: 60, medium: 80 }}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={4} sx={{ width: "100%" }}>
+            <Gauge
+              label="Calories"
+              amount={totals?.calories ?? 0}
+              max={limits.calories}
+              unit="kcal"
+              icon={<LocalFireDepartment />}
+              thresholds={{ low: 60, medium: 80 }}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={4} sx={{ width: "100%" }}>
+            <Gauge
+              label="Caféine"
+              amount={totals?.caffeine ?? 0}
+              max={limits.caffeine}
+              unit="mg"
+              icon={<LocalDrink />}
+              thresholds={{ low: 60, medium: 80 }}
+            />
+          </Grid>
+        </Grid>
       </Card>
     </Box>
   );
