@@ -149,6 +149,11 @@ export default function AnchorTemporaryDrawer() {
             anchor={anchor}
             open={state[anchor]}
             onClose={toggleDrawer(anchor, false)}
+            sx={{
+              "& .MuiDrawer-paper": {
+                borderRadius: "0px",
+              },
+            }}
           >
             {list(anchor)}
           </Drawer>

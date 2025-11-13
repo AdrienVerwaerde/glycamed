@@ -11,7 +11,7 @@ export default function Header() {
         alignItems: "center",
         width: "100%",
         height: "62px",
-        position: "absolute",
+        position: "fixed",
         top: 0,
         backgroundColor: "var(--color-blue)",
         borderBottom: "1px solid var(--color-yellow)",

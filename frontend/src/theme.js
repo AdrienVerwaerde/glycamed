@@ -11,6 +11,7 @@ let theme = createTheme({
     h1: { ...titles },
     h2: { ...titles },
     h3: { ...titles },
+    h4: { ...titles },
     h5: {
       fontFamily: "Golos Text",
       fontSize: "20px",
