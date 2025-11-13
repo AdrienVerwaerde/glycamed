@@ -8,6 +8,9 @@ import {
   updateConsumption,
   deleteConsumption,
   getUserConsumptionStats,
+  getLastNDaysConsumptions,
+  getWeeklyConsumptions,
+  getMonthlyConsumptions,
 } from "../controllers/consumptionController";
 
 const router = express.Router();
@@ -17,6 +20,9 @@ router.route("/").get(getAllConsumptions).post(createConsumption);
 
 // Today's consumptions
 router.get("/today", getTodayConsumptions);
+router.get("/last/:days", getLastNDaysConsumptions);
+router.get("/weekly", getWeeklyConsumptions);
+router.get("/monthly", getMonthlyConsumptions);
 
 // User-specific routes
 router.route("/user/:userId").get(getConsumptionsByUserId);

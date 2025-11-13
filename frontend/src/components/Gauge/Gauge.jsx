@@ -70,7 +70,7 @@ export default function Gauge({
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mt: 0.5 }}>
         <Typography variant="caption" color="text.secondary">
-          {actualPercentage.toFixed(1)}% de la limite quotidienne
+          {actualPercentage.toFixed(1)}% de la limite
         </Typography>
         {actualPercentage >= 100 && (
           <Typography variant="caption" color="error" fontWeight="bold">

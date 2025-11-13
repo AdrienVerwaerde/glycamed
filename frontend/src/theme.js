@@ -59,6 +59,17 @@ let theme = createTheme({
         },
       },
     },
+    MuiAccordion: {
+      styleOverrides: {
+        root: {
+          border: "1px solid var(--color-yellow)",
+          "&:before": {
+            display: "none",
+          },
+          boxShadow: "none",
+        },
+      },
+    },
   },
 });
 

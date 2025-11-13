@@ -12,6 +12,7 @@ export default function Header() {
         width: "100%",
         height: "62px",
         position: "fixed",
+        zIndex: 100,
         top: 0,
         backgroundColor: "var(--color-blue)",
         borderBottom: "1px solid var(--color-yellow)",
