@@ -79,6 +79,15 @@ export const consumptionAPI = {
   // Get today's consumptions
   getTodayConsumptions: () => api.get("/consumptions/today"),
 
+  // Get last N days consumptions
+  getLastNDays: (days) => api.get(`/consumptions/last/${days}`),
+
+  // Get weekly consumptions
+  getWeeklyConsumptions: () => api.get("/consumptions/weekly"),
+
+  // Get monthly consumptions
+  getMonthlyConsumptions: () => api.get("/consumptions/monthly"),
+
   // Get consumptions by user ID
   getByUserId: (userId) => api.get(`/consumptions/user/${userId}`),
 

@@ -447,7 +447,131 @@ export const getTodayConsumptions = async (
       },
     });
   } catch (error: any) {
-    console.error("❌ Error fetching today's consumptions:", error);
+    console.error("Error fetching today's consumptions:", error);
+    res.status(500).json({
+      success: false,
+      error: "Server Error",
+      message: error.message,
+    });
+  }
+};
+
+export const getLastNDaysConsumptions = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const days = parseInt(req.params.days) || 3;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+
+    const consumptions = await Consumption.find({
+      createdAt: { $gte: startDate },
+    }).sort({ createdAt: -1 });
+
+    const totals = consumptions.reduce(
+      (acc, consumption) => ({
+        caffeine: acc.caffeine + consumption.caffeine,
+        sugar: acc.sugar + consumption.sugar,
+        calories: acc.calories + consumption.calories,
+      }),
+      { caffeine: 0, sugar: 0, calories: 0 }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        consumptions,
+        totals,
+        count: consumptions.length,
+        period: `last_${days}_days`,
+      },
+    });
+  } catch (error: any) {
+    console.error("Error fetching consumptions:", error);
+    res.status(500).json({
+      success: false,
+      error: "Server Error",
+      message: error.message,
+    });
+  }
+};
+
+export const getWeeklyConsumptions = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const consumptions = await Consumption.find({
+      createdAt: { $gte: startOfWeek },
+    }).sort({ createdAt: -1 });
+
+    const totals = consumptions.reduce(
+      (acc, consumption) => ({
+        caffeine: acc.caffeine + consumption.caffeine,
+        sugar: acc.sugar + consumption.sugar,
+        calories: acc.calories + consumption.calories,
+      }),
+      { caffeine: 0, sugar: 0, calories: 0 }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        consumptions,
+        totals,
+        count: consumptions.length,
+        period: "weekly",
+      },
+    });
+  } catch (error: any) {
+    console.error("Error fetching weekly consumptions:", error);
+    res.status(500).json({
+      success: false,
+      error: "Server Error",
+      message: error.message,
+    });
+  }
+};
+
+export const getMonthlyConsumptions = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const consumptions = await Consumption.find({
+      createdAt: { $gte: startOfMonth },
+    }).sort({ createdAt: -1 });
+
+    const totals = consumptions.reduce(
+      (acc, consumption) => ({
+        caffeine: acc.caffeine + consumption.caffeine,
+        sugar: acc.sugar + consumption.sugar,
+        calories: acc.calories + consumption.calories,
+      }),
+      { caffeine: 0, sugar: 0, calories: 0 }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        consumptions,
+        totals,
+        count: consumptions.length,
+        period: "monthly",
+      },
+    });
+  } catch (error: any) {
+    console.error("Error fetching monthly consumptions:", error);
     res.status(500).json({
       success: false,
       error: "Server Error",
