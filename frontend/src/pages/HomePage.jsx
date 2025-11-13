@@ -1,12 +1,5 @@
 import { useState } from "react";
-import {
-  Box,
-  Button,
-  Grid,
-  Alert,
-  CircularProgress,
-  Card,
-} from "@mui/material";
+import { Box, Button, Grid, CircularProgress, Card } from "@mui/material";
 import {
   Add,
   LocalDrink,
@@ -44,12 +37,6 @@ export default function HomePage() {
   return (
     <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
       <Card sx={{ mt: 10, mx: 2, p: 4 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
-
         <Grid container spacing={2} sx={{ justifyContent: "center" }}>
           <Grid item xs={12} md={4} sx={{ width: "100%" }}>
             <Gauge

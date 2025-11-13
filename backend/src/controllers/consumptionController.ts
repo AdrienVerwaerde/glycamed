@@ -120,6 +120,7 @@ export const createConsumption = async (
       sugar,
       calories,
       notes,
+      createdAt,
     } = req.body;
 
     // Validation
@@ -167,6 +168,7 @@ export const createConsumption = async (
       sugar: sugar || 0,
       calories: calories || 0,
       notes: notes || "",
+      createdAt: createdAt || new Date(),
     });
 
     res.status(201).json({
@@ -394,6 +396,58 @@ export const getUserConsumptionStats = async (
       },
     });
   } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: "Server Error",
+      message: error.message,
+    });
+  }
+};
+
+// @desc    Get today's consumptions for current user
+// @route   GET /api/consumptions/today
+// @access  Private
+export const getTodayConsumptions = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const consumptions = await Consumption.find({
+      createdAt: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+    }).sort({ createdAt: -1 });
+
+    // ✅ Always return valid data, even if empty
+    const totals =
+      consumptions.length > 0
+        ? consumptions.reduce(
+            (acc, consumption) => ({
+              caffeine: acc.caffeine + consumption.caffeine,
+              sugar: acc.sugar + consumption.sugar,
+              calories: acc.calories + consumption.calories,
+            }),
+            { caffeine: 0, sugar: 0, calories: 0 }
+          )
+        : { caffeine: 0, sugar: 0, calories: 0 }; // ✅ Default to zeros
+
+    res.status(200).json({
+      success: true,
+      data: {
+        consumptions, // ✅ Empty array if none
+        totals, // ✅ Zeros if none
+        count: consumptions.length,
+      },
+    });
+  } catch (error: any) {
+    console.error("❌ Error fetching today's consumptions:", error);
     res.status(500).json({
       success: false,
       error: "Server Error",

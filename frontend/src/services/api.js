@@ -76,6 +76,9 @@ export const consumptionAPI = {
   // Get all consumptions
   getAll: () => api.get("/consumptions"),
 
+  // Get today's consumptions
+  getTodayConsumptions: () => api.get("/consumptions/today"),
+
   // Get consumptions by user ID
   getByUserId: (userId) => api.get(`/consumptions/user/${userId}`),
 
