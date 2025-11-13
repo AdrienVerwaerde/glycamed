@@ -28,11 +28,12 @@ export default function Gauge({
 }) {
   // Ensure amount is a valid number
   const safeAmount = Number(amount) || 0;
-  const percentage = Math.min((safeAmount / max) * 100, 100);
+  const actualPercentage = (safeAmount / max) * 100;
+  const visualPercentage = Math.min(actualPercentage, 100);
 
   const getSeverity = () => {
-    if (percentage >= thresholds.medium) return "high";
-    if (percentage >= thresholds.low) return "medium";
+    if (actualPercentage >= thresholds.medium) return "high";
+    if (actualPercentage >= thresholds.low) return "medium";
     return "low";
   };
 
@@ -63,15 +64,15 @@ export default function Gauge({
 
       <StyledLinearProgress
         variant="determinate"
-        value={percentage}
+        value={visualPercentage}
         severity={severity}
       />
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mt: 0.5 }}>
         <Typography variant="caption" color="text.secondary">
-          {percentage.toFixed(1)}% de la limite quotidienne
+          {actualPercentage.toFixed(1)}% de la limite quotidienne
         </Typography>
-        {percentage >= 100 && (
+        {actualPercentage >= 100 && (
           <Typography variant="caption" color="error" fontWeight="bold">
             ⚠️ Limite dépassée
           </Typography>

@@ -3,6 +3,7 @@ import {
   getAllConsumptions,
   getConsumptionById,
   getConsumptionsByUserId,
+  getTodayConsumptions,
   createConsumption,
   updateConsumption,
   deleteConsumption,
@@ -13,6 +14,9 @@ const router = express.Router();
 
 // Base routes
 router.route("/").get(getAllConsumptions).post(createConsumption);
+
+// Today's consumptions
+router.get("/today", getTodayConsumptions);
 
 // User-specific routes
 router.route("/user/:userId").get(getConsumptionsByUserId);
