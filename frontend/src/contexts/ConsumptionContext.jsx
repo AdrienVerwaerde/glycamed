@@ -1,3 +1,5 @@
+// src/contexts/ConsumptionContext.jsx
+
 import { createContext, useContext, useState, useEffect } from "react";
 import { consumptionAPI } from "../services/api";
 import { useAuth } from "./AuthContext";
@@ -31,12 +33,15 @@ export function ConsumptionProvider({ children }) {
 
       console.log("📊 Fetching today's consumptions...");
 
-      const { data } = await consumptionAPI.getTodayConsumptions();
+      const response = await consumptionAPI.getTodayConsumptions();
 
-      // Handle both empty and populated responses
-      const fetchedConsumptions = data.data?.consumptions || [];
+      // Backend returns: { success: true, data: [...consumptions] }
+      const fetchedConsumptions = Array.isArray(response.data?.data)
+        ? response.data.data
+        : [];
 
       console.log(`✅ Found ${fetchedConsumptions.length} consumptions today`);
+      console.log("Response structure:", response.data);
 
       setConsumptions(fetchedConsumptions);
     } catch (err) {
@@ -64,7 +69,7 @@ export function ConsumptionProvider({ children }) {
       setConsumptions([]);
       setLoading(false);
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?.id]);
 
   // Check for day change every minute and refresh
   useEffect(() => {
@@ -78,19 +83,24 @@ export function ConsumptionProvider({ children }) {
         console.log("New day detected! Refreshing consumptions...");
         localStorage.setItem("lastDayCheck", today);
 
+        // Clear old consumptions immediately
+        setConsumptions([]);
+
         // Refresh today's consumptions from API
         fetchTodayConsumptions();
       }
     };
 
-    // Check immediately
+    // Check immediately on mount
+    const today = getStartOfToday();
+    localStorage.setItem("lastDayCheck", today);
     checkDayChange();
 
     // Check every minute for day change
     const interval = setInterval(checkDayChange, 60000);
 
     return () => clearInterval(interval);
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?.id]);
 
   const addConsumption = async (consumptionData) => {
     // Check if user is authenticated
@@ -101,6 +111,7 @@ export function ConsumptionProvider({ children }) {
     try {
       const payload = {
         product: consumptionData.product_name,
+        productImage: consumptionData.product_image || "",
         quantity: consumptionData.quantity,
         location: consumptionData.location,
         userId: user.id,
@@ -110,16 +121,17 @@ export function ConsumptionProvider({ children }) {
         notes: consumptionData.notes || "",
       };
 
-      console.log("Sending to backend:", payload);
+      console.log("📤 Sending to backend:", payload);
 
-      const { data } = await consumptionAPI.create(payload);
-      const newConsumption = data.data;
+      const response = await consumptionAPI.create(payload);
 
-      // Add to current consumptions and refresh to get updated totals
+      // Handle response structure properly
+      const newConsumption = response.data?.data || response.data;
+
+      console.log("Consumption added:", newConsumption);
+
+      // Add to current consumptions at the beginning (most recent first)
       setConsumptions([newConsumption, ...consumptions]);
-
-      // Optional: refresh from server to ensure sync
-      // await fetchTodayConsumptions();
 
       return newConsumption;
     } catch (err) {
@@ -132,8 +144,8 @@ export function ConsumptionProvider({ children }) {
 
   const updateConsumption = async (id, consumptionData) => {
     try {
-      const { data } = await consumptionAPI.update(id, consumptionData);
-      const updated = data.data;
+      const response = await consumptionAPI.update(id, consumptionData);
+      const updated = response.data?.data || response.data;
 
       setConsumptions(consumptions.map((c) => (c._id === id ? updated : c)));
       return updated;
@@ -149,6 +161,7 @@ export function ConsumptionProvider({ children }) {
     try {
       await consumptionAPI.delete(id);
       setConsumptions(consumptions.filter((c) => c._id !== id));
+      console.log("Consumption removed");
     } catch (err) {
       console.error("Error removing consumption:", err);
       const errorMessage = err.response?.data?.error || err.message;

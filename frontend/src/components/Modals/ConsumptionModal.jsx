@@ -184,6 +184,8 @@ export default function ConsumptionModal({ open, onClose }) {
         product_name: `${selectedProduct.name}${
           selectedProduct.brand ? ` - ${selectedProduct.brand}` : ""
         }`,
+        productImage:
+          selectedProduct.imageUrl || selectedProduct.image_url || "",
         quantity: formData.quantity,
         location: formData.location,
         notes: formData.notes,

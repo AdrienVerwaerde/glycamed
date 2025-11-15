@@ -1,5 +1,3 @@
-// src/components/ConsumptionRecap/ConsumptionRecap.jsx
-
 import { useState } from "react";
 import {
   Card,

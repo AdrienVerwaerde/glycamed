@@ -16,6 +16,7 @@ export default function Header() {
         top: 0,
         backgroundColor: "var(--color-blue)",
         borderBottom: "1px solid var(--color-yellow)",
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.40)",
       }}
     >
       <Typography
