@@ -5,7 +5,6 @@ import {
   Card,
   Typography,
   Divider,
-  Grid,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -14,7 +13,6 @@ import {
   Stack,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { LocalDrink, LocalFireDepartment, Opacity } from "@mui/icons-material";
 import Gauge from "../Gauge/Gauge";
 import { consumptionAPI } from "../../services/api";
 
@@ -49,7 +47,8 @@ export default function ConsumptionRecap() {
         days = 7;
         break;
       case "monthly":
-        days = 30;
+        const now = new Date();
+        days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
         break;
       default:
         days = 1;
@@ -138,7 +137,10 @@ export default function ConsumptionRecap() {
     if (loading[period]) {
       return (
         <Box display="flex" justifyContent="center" p={3}>
-          <CircularProgress />
+          <CircularProgress
+            sx={{ color: "var(--color-background)" }}
+            size={24}
+          />
         </Box>
       );
     }

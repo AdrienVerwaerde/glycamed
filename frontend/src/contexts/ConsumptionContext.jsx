@@ -42,7 +42,7 @@ export function ConsumptionProvider({ children }) {
     } catch (err) {
       console.error("Error fetching today's consumptions:", err);
 
-      // ✅ Only set error for real errors (not 404 or empty data)
+      // Only set error for real errors (not 404 or empty data)
       if (err.response?.status === 404 || err.response?.status === 204) {
         console.log("No consumptions found for today");
         setConsumptions([]);
@@ -185,6 +185,7 @@ export function ConsumptionProvider({ children }) {
         addConsumption,
         updateConsumption,
         removeConsumption,
+        count: consumptions.length,
         refreshConsumptions: fetchTodayConsumptions,
       }}
     >

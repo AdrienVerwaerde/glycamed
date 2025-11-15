@@ -26,6 +26,18 @@ let theme = createTheme({
       },
     },
     MuiButton: {
+      variants: [
+        {
+          props: { variant: "cancel" },
+          style: {
+            backgroundColor: "var(--color-red)",
+            color: "var(--color-white)",
+            "&:hover": {
+              boxShadow: "0px 0px 8px var(--color-red)",
+            },
+          },
+        },
+      ],
       styleOverrides: {
         root: {
           backgroundColor: "var(--color-yellow)",

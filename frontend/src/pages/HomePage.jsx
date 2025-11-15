@@ -20,7 +20,7 @@ import ConsumptionModal from "../components/Modals/ConsumptionModal";
 import ConsumptionRecap from "../components/ConsumptionsCards/ConsumptionRecap";
 
 export default function HomePage() {
-  const { totals, loading, error } = useConsumption();
+  const { totals, loading, count } = useConsumption();
   const [modalOpen, setModalOpen] = useState(false);
 
   const limits = {
@@ -38,7 +38,7 @@ export default function HomePage() {
         alignItems="center"
         minHeight="80vh"
       >
-        <CircularProgress size={60} />
+        <CircularProgress size={60} sx={{ color: "var(--color-background)" }} />
       </Box>
     );
   }
@@ -61,6 +61,12 @@ export default function HomePage() {
         <Typography variant="h4" sx={{ mb: 2 }}>
           Consos du jour
         </Typography>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            {count} consommation{count > 1 ? "s" : ""} enregistrée
+            {count > 1 ? "s" : ""} aujourd'hui
+          </Typography>
+        </Box>
         <Divider sx={{ mb: 2 }} />
         <Grid container spacing={2} sx={{ justifyContent: "center" }}>
           <Grid item xs={12} md={4} sx={{ width: "100%" }}>
