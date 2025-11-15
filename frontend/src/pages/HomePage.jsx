@@ -49,7 +49,7 @@ export default function HomePage() {
         width: "100%",
         display: "flex",
         flexWrap: "wrap",
-        gap: 4,
+        gap: 2,
         flexDirection: "column",
         justifyContent: "center",
         mt: 10,
@@ -61,13 +61,14 @@ export default function HomePage() {
         <Typography variant="h4" sx={{ mb: 2 }}>
           Consos du jour
         </Typography>
+
+        <Divider sx={{ mb: 2 }} />
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary">
             {count} consommation{count > 1 ? "s" : ""} enregistrée
             {count > 1 ? "s" : ""} aujourd'hui
           </Typography>
         </Box>
-        <Divider sx={{ mb: 2 }} />
         <Grid container spacing={2} sx={{ justifyContent: "center" }}>
           <Grid item xs={12} md={4} sx={{ width: "100%" }}>
             <Gauge
