@@ -113,6 +113,7 @@ export const createConsumption = async (
   try {
     const {
       product,
+      productImage,
       quantity,
       location,
       userId,
@@ -161,6 +162,7 @@ export const createConsumption = async (
 
     const consumption = await Consumption.create({
       product,
+      productImage: productImage || "",
       quantity,
       location,
       userId,
