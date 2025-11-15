@@ -22,7 +22,7 @@ export default function Header() {
         variant="h4"
         sx={{
           color: "var(--color-yellow)",
-          pl: 3,
+          ml: 3,
           fontFamily: "Rubik Vinyl",
         }}
       >
