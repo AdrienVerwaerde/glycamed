@@ -1,3 +1,5 @@
+// src/contexts/ConsumptionContext.jsx
+
 import { createContext, useContext, useState, useEffect } from "react";
 import { consumptionAPI } from "../services/api";
 import { useAuth } from "./AuthContext";
@@ -10,45 +12,93 @@ export function ConsumptionProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch consumptions on mount and when user changes
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchConsumptions();
-    } else {
-      setConsumptions([]);
-      setLoading(false);
-    }
-  }, [isAuthenticated, user]);
+  // Check if we need to refresh (new day)
+  const getStartOfToday = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today.toISOString();
+  };
 
-  const fetchConsumptions = async () => {
-    if (!user?.id) {
-      setLoading(false);
-      return;
-    }
-
+  // Fetch today's consumptions from API
+  const fetchTodayConsumptions = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const { data } = await consumptionAPI.getByUserId(user.id);
-      setConsumptions(data.data || []);
+      console.log("🔄 Fetching today's consumptions...");
+
+      const response = await consumptionAPI.getTodayConsumptions();
+      const fetchedData = response.data?.data;
+      const fetchedConsumptions = fetchedData?.consumptions || [];
+
+      console.log(`Found ${fetchedConsumptions.length} consumptions today`);
+      console.log("Response structure:", response.data);
+
+      setConsumptions(fetchedConsumptions);
     } catch (err) {
-      console.error("Error fetching consumptions:", err);
-      setError(err.response?.data?.error || err.message);
-      setConsumptions([]);
+      console.error("Error fetching today's consumptions:", err);
+
+      // Only set error for real errors (not 404 or empty data)
+      if (err.response?.status === 404 || err.response?.status === 204) {
+        console.log("No consumptions found for today");
+        setConsumptions([]);
+        setError(null);
+      } else {
+        setError(err.response?.data?.error || err.message);
+        setConsumptions([]);
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Fetch consumptions on mount
+  useEffect(() => {
+    console.log("Fetching data...");
+    fetchTodayConsumptions();
+  }, []);
+
+  useEffect(() => {
+    /**
+     * Checks if today is a new day (compared to the last time checked).
+     * If so, refreshes today's consumptions from the API and clears the old ones.
+     */
+    const checkDayChange = () => {
+      const lastCheck = localStorage.getItem("lastDayCheck");
+      const today = getStartOfToday();
+
+      if (lastCheck !== today) {
+        console.log("Today is a new day! Refreshing consumptions...");
+        localStorage.setItem("lastDayCheck", today);
+
+        // Clear old consumptions immediately
+        setConsumptions([]);
+
+        // Refresh today's consumptions from API
+        fetchTodayConsumptions();
+      }
+    };
+
+    // Set initial check
+    const today = getStartOfToday();
+    localStorage.setItem("lastDayCheck", today);
+
+    // Check every minute for day change
+    const interval = setInterval(checkDayChange, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const addConsumption = async (consumptionData) => {
-    if (!user?.id) {
+    // Check if user is authenticated
+    if (!user?.id || !isAuthenticated) {
       throw new Error("Veuillez vous identifier pour poster");
     }
 
     try {
       const payload = {
         product: consumptionData.product_name,
+        productImage: consumptionData.product_image || "",
         quantity: consumptionData.quantity,
         location: consumptionData.location,
         userId: user.id,
@@ -58,12 +108,18 @@ export function ConsumptionProvider({ children }) {
         notes: consumptionData.notes || "",
       };
 
-      console.log("📤 Sending to backend:", payload);
+      console.log("⬆️ Sending to backend:", payload);
 
-      const { data } = await consumptionAPI.create(payload);
-      const newConsumption = data.data;
+      const response = await consumptionAPI.create(payload);
 
+      // Handle response structure properly
+      const newConsumption = response.data?.data || response.data;
+
+      console.log("Consumption added:", newConsumption);
+
+      // Add to current consumptions at the beginning (most recent first)
       setConsumptions([newConsumption, ...consumptions]);
+
       return newConsumption;
     } catch (err) {
       console.error("Error adding consumption:", err);
@@ -75,8 +131,8 @@ export function ConsumptionProvider({ children }) {
 
   const updateConsumption = async (id, consumptionData) => {
     try {
-      const { data } = await consumptionAPI.update(id, consumptionData);
-      const updated = data.data;
+      const response = await consumptionAPI.update(id, consumptionData);
+      const updated = response.data?.data || response.data;
 
       setConsumptions(consumptions.map((c) => (c._id === id ? updated : c)));
       return updated;
@@ -92,6 +148,7 @@ export function ConsumptionProvider({ children }) {
     try {
       await consumptionAPI.delete(id);
       setConsumptions(consumptions.filter((c) => c._id !== id));
+      console.log("Consumption removed");
     } catch (err) {
       console.error("Error removing consumption:", err);
       const errorMessage = err.response?.data?.error || err.message;
@@ -100,7 +157,7 @@ export function ConsumptionProvider({ children }) {
     }
   };
 
-  // Calculate totals from current consumptions with safe defaults
+  // Calculate totals from today consumptions only
   const totals = consumptions.reduce(
     (acc, curr) => ({
       sugar: acc.sugar + (curr.sugar || 0),
@@ -110,17 +167,26 @@ export function ConsumptionProvider({ children }) {
     { sugar: 0, calories: 0, caffeine: 0 }
   );
 
+  // Daily limits
+  const limits = {
+    caffeine: 400, // mg per day
+    sugar: 50, // g per day
+    calories: 2000, // kcal per day
+  };
+
   return (
     <ConsumptionContext.Provider
       value={{
         consumptions,
         totals,
+        limits,
         loading,
         error,
         addConsumption,
         updateConsumption,
         removeConsumption,
-        refreshConsumptions: fetchConsumptions,
+        count: consumptions.length,
+        refreshConsumptions: fetchTodayConsumptions,
       }}
     >
       {children}
