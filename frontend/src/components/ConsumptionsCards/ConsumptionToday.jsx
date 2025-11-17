@@ -24,11 +24,14 @@ import { useConsumption } from "../../contexts/ConsumptionContext";
 import ConsumptionModal from "../../components/Modals/ConsumptionModal";
 import Gauge from "../Gauge/Gauge";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function ConsumptionToday() {
   const [modalOpen, setModalOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const { totals, loading, count, consumptions } = useConsumption();
+  const { isAuthenticated } = useAuth();
 
   const handleAccordionChange = async (panel) => {
     const isExpanding = expanded !== panel;
@@ -192,14 +195,39 @@ export default function ConsumptionToday() {
             />
           </Grid>
         </Grid>
-        <Button
-          sx={{ mt: 4, width: "100%" }}
-          startIcon={<Add />}
-          onClick={() => setModalOpen(true)}
-        >
-          Ajouter une consommation
-        </Button>
-
+        {isAuthenticated ? (
+          <Button
+            sx={{ mt: 4, width: "100%" }}
+            startIcon={<Add />}
+            onClick={() => setModalOpen(true)}
+          >
+            Ajouter une consommation
+          </Button>
+        ) : (
+          <Typography
+            component="div"
+            sx={{
+              backgroundColor: "var(--color-yellow)",
+              borderRadius: "12px",
+              p: 2,
+              mt: 2,
+              textAlign: "center",
+            }}
+          >
+            Tu as vu Amed avec une boisson sucrée ?{" "}
+            <Link to={"/login"}>
+              <Typography
+                sx={{
+                  color: "var(--color-blue)",
+                  fontWeight: "bold",
+                  textDecoration: "underline",
+                }}
+              >
+                Ajoute la conso !
+              </Typography>
+            </Link>
+          </Typography>
+        )}
         {/* Modal to add consumption  */}
         <ConsumptionModal
           open={modalOpen}
