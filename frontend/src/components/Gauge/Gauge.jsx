@@ -72,7 +72,12 @@ export default function Gauge({
         <Typography variant="caption" color="text.secondary">
           {actualPercentage.toFixed(1)}% de la limite
         </Typography>
-        {actualPercentage >= 100 && (
+        {actualPercentage === 100 && (
+          <Typography variant="caption" color="error" fontWeight="bold">
+            ⚠️ Limite atteinte
+          </Typography>
+        )}
+        {actualPercentage >= 101 && (
           <Typography variant="caption" color="error" fontWeight="bold">
             ⚠️ Limite dépassée
           </Typography>
