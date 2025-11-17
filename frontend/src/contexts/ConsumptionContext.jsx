@@ -21,26 +21,17 @@ export function ConsumptionProvider({ children }) {
 
   // Fetch today's consumptions from API
   const fetchTodayConsumptions = async () => {
-    if (!user?.id || !isAuthenticated) {
-      setConsumptions([]);
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
       setError(null);
 
-      console.log("📊 Fetching today's consumptions...");
+      console.log("🔄 Fetching today's consumptions...");
 
       const response = await consumptionAPI.getTodayConsumptions();
+      const fetchedData = response.data?.data;
+      const fetchedConsumptions = fetchedData?.consumptions || [];
 
-      // Backend returns: { success: true, data: [...consumptions] }
-      const fetchedConsumptions = Array.isArray(response.data?.data)
-        ? response.data.data
-        : [];
-
-      console.log(`✅ Found ${fetchedConsumptions.length} consumptions today`);
+      console.log(`Found ${fetchedConsumptions.length} consumptions today`);
       console.log("Response structure:", response.data);
 
       setConsumptions(fetchedConsumptions);
@@ -61,26 +52,23 @@ export function ConsumptionProvider({ children }) {
     }
   };
 
-  // Fetch consumptions on mount and when user changes
+  // Fetch consumptions on mount
   useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchTodayConsumptions();
-    } else {
-      setConsumptions([]);
-      setLoading(false);
-    }
-  }, [isAuthenticated, user?.id]);
+    console.log("Fetching data...");
+    fetchTodayConsumptions();
+  }, []);
 
-  // Check for day change every minute and refresh
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
-
+    /**
+     * Checks if today is a new day (compared to the last time checked).
+     * If so, refreshes today's consumptions from the API and clears the old ones.
+     */
     const checkDayChange = () => {
       const lastCheck = localStorage.getItem("lastDayCheck");
       const today = getStartOfToday();
 
       if (lastCheck !== today) {
-        console.log("New day detected! Refreshing consumptions...");
+        console.log("Today is a new day! Refreshing consumptions...");
         localStorage.setItem("lastDayCheck", today);
 
         // Clear old consumptions immediately
@@ -91,20 +79,19 @@ export function ConsumptionProvider({ children }) {
       }
     };
 
-    // Check immediately on mount
+    // Set initial check
     const today = getStartOfToday();
     localStorage.setItem("lastDayCheck", today);
-    checkDayChange();
 
     // Check every minute for day change
     const interval = setInterval(checkDayChange, 60000);
 
     return () => clearInterval(interval);
-  }, [isAuthenticated, user?.id]);
+  }, []);
 
   const addConsumption = async (consumptionData) => {
     // Check if user is authenticated
-    if (!user?.id) {
+    if (!user?.id || !isAuthenticated) {
       throw new Error("Veuillez vous identifier pour poster");
     }
 
@@ -121,7 +108,7 @@ export function ConsumptionProvider({ children }) {
         notes: consumptionData.notes || "",
       };
 
-      console.log("📤 Sending to backend:", payload);
+      console.log("⬆️ Sending to backend:", payload);
 
       const response = await consumptionAPI.create(payload);
 
