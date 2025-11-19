@@ -9,6 +9,11 @@ const links = [
     title: "Rapports",
     url: "/reports",
   },
+  {
+    id: 2,
+    title: "🔒Amed",
+    url: "/amed",
+  },
 ];
 
 export default links;
