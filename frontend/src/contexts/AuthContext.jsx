@@ -1,47 +1,57 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { authAPI } from "../services/api";
 
-const AuthContext = createContext(undefined);
+const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [shouldRedirect, setShouldRedirect] = useState(null);
   const navigate = useNavigate();
-  const location = useLocation();
 
+  // useEffect qui gère la redirection après mise à jour du user
   useEffect(() => {
-    // Check if user is logged in on mount
-    const initAuth = async () => {
-      const token = localStorage.getItem("accessToken");
-      if (token) {
-        try {
-          const { data } = await authAPI.me();
-          setUser(data.data);
-          if (data.data.role === "amed" && location.pathname === "/") {
-            navigate("/amed", { replace: true });
-          }
-        } catch (error) {
-          console.error("Failed to get user:", error);
-          localStorage.removeItem("accessToken");
-        }
-      }
-      setLoading(false);
-    };
-
-    initAuth();
-  }, [navigate, location.pathname]);
-
-  const login = async (email, password) => {
-    try {
-      const response = await authAPI.login({ email, password });
-      localStorage.setItem("accessToken", response.data.data.accessToken);
-      setUser(response.data.data.user);
-      if (response.data.data.user.role === "amed") {
+    if (shouldRedirect && user) {
+      if (user.role === "amed") {
         navigate("/amed", { replace: true });
       } else {
         navigate("/", { replace: true });
       }
+      setShouldRedirect(null); // Reset
+    }
+  }, [user, shouldRedirect, navigate]);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      const response = await authAPI.me();
+      setUser(response.data.data);
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      localStorage.removeItem("accessToken");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (email, password) => {
+    try {
+      const response = await authAPI.login({ email, password });
+
+      localStorage.setItem("accessToken", response.data.data.accessToken);
+      setUser(response.data.data.user);
+      setShouldRedirect(true); // Active la redirection
+
       return response.data;
     } catch (error) {
       throw error;
@@ -51,13 +61,11 @@ export function AuthProvider({ children }) {
   const register = async (userData) => {
     try {
       const response = await authAPI.register(userData);
+
       localStorage.setItem("accessToken", response.data.data.accessToken);
       setUser(response.data.data.user);
-      if (response.data.data.user.role === "amed") {
-        navigate("/amed", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
+      setShouldRedirect(true); // Active la redirection
+
       return response.data;
     } catch (error) {
       throw error;
@@ -72,26 +80,26 @@ export function AuthProvider({ children }) {
     } finally {
       localStorage.removeItem("accessToken");
       setUser(null);
-      navigate("/login", { replace: true }); 
+      navigate("/login");
     }
   };
 
   const value = {
     user,
     loading,
+    isAuthenticated: !!user,
     login,
     register,
     logout,
-    isAuthenticated: !!user,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}
+};

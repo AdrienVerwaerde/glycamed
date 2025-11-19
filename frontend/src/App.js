@@ -5,6 +5,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProtectedRoute from "./components/Auth/ProtectedRoute";
+import ProtectedAmedRoute from "./components/Auth/ProtectedAmedRoute";
 import AmedPage from "./pages/AmedPage";
 import Layout from "./components/Layout";
 
@@ -13,14 +14,14 @@ export default function App() {
     <div className="App">
       <main>
         <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<Layout />}>
+            <Route index element={<HomePage />} />
             <Route
               path="/amed"
               element={
-                <ProtectedRoute>
+                <ProtectedAmedRoute>
                   <AmedPage />
-                </ProtectedRoute>
+                </ProtectedAmedRoute>
               }
             />
           </Route>
