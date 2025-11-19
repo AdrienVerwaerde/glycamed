@@ -6,38 +6,59 @@ const ConsumptionContext = createContext();
 
 export function ConsumptionProvider({ children }) {
   const { user, isAuthenticated } = useAuth();
+
   const [consumptions, setConsumptions] = useState([]);
+  const [stats, setStats] = useState(null); // ← NEW
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch consumptions on mount and when user changes
   useEffect(() => {
     if (isAuthenticated && user) {
-      fetchConsumptions();
+      loadAllData();
+      const interval = setInterval(loadAllData, 30000); // refresh every 30s
+      return () => clearInterval(interval);
     } else {
       setConsumptions([]);
+      setStats(null);
       setLoading(false);
     }
   }, [isAuthenticated, user]);
 
-  const fetchConsumptions = async () => {
-    if (!user?.id) {
-      setLoading(false);
-      return;
-    }
-
+  const loadAllData = async () => {
     try {
       setLoading(true);
       setError(null);
 
+      await Promise.all([fetchUserConsumptions(), fetchAmedStats()]);
+
+    } catch (err) {
+      console.error("Global fetch error:", err);
+      setError(err.message || "Erreur lors du chargement des données");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserConsumptions = async () => {
+    if (!user?.id) return;
+
+    try {
       const { data } = await consumptionAPI.getByUserId(user.id);
       setConsumptions(data.data || []);
     } catch (err) {
       console.error("Error fetching consumptions:", err);
       setError(err.response?.data?.error || err.message);
       setConsumptions([]);
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  const fetchAmedStats = async () => {
+    try {
+      const res = await consumptionAPI.getAmedTodayStats();
+      setStats(res.data.data || null);
+    } catch (err) {
+      console.error("Error fetching global stats:", err);
+      // on n'efface pas les anciennes stats si le backend fail	  
     }
   };
 
@@ -58,26 +79,23 @@ export function ConsumptionProvider({ children }) {
         notes: consumptionData.notes || "",
       };
 
-      console.log("📤 Sending to backend:", payload);
-
       const { data } = await consumptionAPI.create(payload);
       const newConsumption = data.data;
 
-      setConsumptions([newConsumption, ...consumptions]);
+      setConsumptions((prev) => [newConsumption, ...prev]);
 
+      // refresh global stats (AmedPage)
+      fetchAmedStats();
+
+      // optional alert check
       try {
         await consumptionAPI.checkAlert();
-        console.log("Alert check completed");
-      } catch (alertErr) {
-        console.warn("Alert check failed (non-blocking):", alertErr);
-      }
+      } catch (_) {}
 
       return newConsumption;
     } catch (err) {
       console.error("Error adding consumption:", err);
-      const errorMessage = err.response?.data?.error || err.message;
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      throw new Error(err.response?.data?.error || err.message);
     }
   };
 
@@ -86,36 +104,34 @@ export function ConsumptionProvider({ children }) {
       const { data } = await consumptionAPI.update(id, consumptionData);
       const updated = data.data;
 
-      setConsumptions(consumptions.map((c) => (c._id === id ? updated : c)));
+      setConsumptions((prev) =>
+        prev.map((c) => (c._id === id ? updated : c))
+      );
+
+      fetchAmedStats();
+
       return updated;
     } catch (err) {
-      console.error("Error updating consumption:", err);
-      const errorMessage = err.response?.data?.error || err.message;
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      throw new Error(err.response?.data?.error || err.message);
     }
   };
 
   const removeConsumption = async (id) => {
     try {
       await consumptionAPI.delete(id);
-      setConsumptions(consumptions.filter((c) => c._id !== id));
+      setConsumptions((prev) => prev.filter((c) => c._id !== id));
+
+      fetchAmedStats();
 
       try {
         await consumptionAPI.checkAlert();
-        console.log("Alert check after deletion completed");
-      } catch (alertErr) {
-        console.warn("Alert check failed (non-blocking):", alertErr);
-      }
+      } catch (_) {}
+
     } catch (err) {
-      console.error("Error removing consumption:", err);
-      const errorMessage = err.response?.data?.error || err.message;
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      throw new Error(err.response?.data?.error || err.message);
     }
   };
 
-  // Calculate totals from current consumptions with safe defaults
   const totals = consumptions.reduce(
     (acc, curr) => ({
       sugar: acc.sugar + (curr.sugar || 0),
@@ -125,17 +141,21 @@ export function ConsumptionProvider({ children }) {
     { sugar: 0, calories: 0, caffeine: 0 }
   );
 
+
   return (
     <ConsumptionContext.Provider
       value={{
         consumptions,
+        stats,
         totals,
         loading,
         error,
+
         addConsumption,
         updateConsumption,
         removeConsumption,
-        refreshConsumptions: fetchConsumptions,
+
+        refreshConsumptions: loadAllData,
       }}
     >
       {children}
@@ -144,9 +164,7 @@ export function ConsumptionProvider({ children }) {
 }
 
 export function useConsumption() {
-  const context = useContext(ConsumptionContext);
-  if (!context) {
-    throw new Error("useConsumption must be used within ConsumptionProvider");
-  }
-  return context;
+  const ctx = useContext(ConsumptionContext);
+  if (!ctx) throw new Error("useConsumption must be used within a provider");
+  return ctx;
 }

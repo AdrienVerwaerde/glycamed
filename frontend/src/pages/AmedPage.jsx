@@ -26,12 +26,13 @@ import Gauge from "../components/Gauge/Gauge";
 import StatsCard from "../components/Stats/StatsCard";
 import HealthStatus from "../components/Health/HealthStatus";
 import AlertBadge from "../components/Alerts/AlertBadge";
-import { consumptionAPI, alertAPI } from "../services/api";
+import { alertAPI } from "../services/api";
+import { useConsumption } from "../contexts/ConsumptionContext";
 
 export default function AmedPage() {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // 🔥 On récupère stats, loading et error comme dans HomePage
+  const { totals, stats, loading, error } = useConsumption();
+
   const [alertStats, setAlertStats] = useState(null);
 
   const limits = {
@@ -40,30 +41,12 @@ export default function AmedPage() {
     caffeine: 400,
   };
 
+  // 👉 On garde l'appel pour les statistiques d'alertes
   useEffect(() => {
-    fetchStats();
     fetchAlertStats();
-    // Rafraîchir toutes les 30 secondes
-    const interval = setInterval(() => {
-      fetchStats();
-      fetchAlertStats();
-    }, 30000);
+    const interval = setInterval(fetchAlertStats, 30000);
     return () => clearInterval(interval);
   }, []);
-
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      const response = await consumptionAPI.getAmedTodayStats();
-      setStats(response.data.data);
-      setError(null);
-    } catch (err) {
-      setError("Erreur lors du chargement des statistiques");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchAlertStats = async () => {
     try {
@@ -74,6 +57,7 @@ export default function AmedPage() {
     }
   };
 
+  // Même affichage loading que HomePage
   if (loading && !stats) {
     return (
       <Box
@@ -87,9 +71,9 @@ export default function AmedPage() {
     );
   }
 
-  const sugarPercent = ((stats?.totals?.sugar || 0) / limits.sugar) * 100;
+  const sugarPercent = ((totals?.sugar || 0) / limits.sugar) * 100;
   const caffeinePercent =
-    ((stats?.totals?.caffeine || 0) / limits.caffeine) * 100;
+    ((totals?.caffeine || 0) / limits.caffeine) * 100;
 
   return (
     <Box 
@@ -107,7 +91,7 @@ export default function AmedPage() {
         </Alert>
       )}
 
-      {/* En-tête avec badge d'alerte */}
+      {/* En-tête */}
       <Box
         display="flex"
         alignItems="center"
@@ -148,7 +132,7 @@ export default function AmedPage() {
         />
       </Box>
 
-      {/* Cartes de statistiques rapides */}
+      {/* Stats cards */}
       <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={4} lg={3}>
           <StatsCard
@@ -162,7 +146,7 @@ export default function AmedPage() {
           <StatsCard
             icon={<Opacity />}
             label="Sucre total"
-            value={`${(stats?.totals?.sugar || 0).toFixed(1)}g`}
+            value={`${(totals?.sugar || 0).toFixed(1)}g`}
             color="#ff9800"
           />
         </Grid>
@@ -170,7 +154,7 @@ export default function AmedPage() {
           <StatsCard
             icon={<LocalDrink />}
             label="Caféine totale"
-            value={`${(stats?.totals?.caffeine || 0).toFixed(0)}mg`}
+            value={`${(totals?.caffeine || 0).toFixed(0)}mg`}
             color="#f44336"
           />
         </Grid>
@@ -178,12 +162,11 @@ export default function AmedPage() {
           <StatsCard
             icon={<LocalFireDepartment />}
             label="Calories totales"
-            value={`${(stats?.totals?.calories || 0).toFixed(0)}`}
+            value={`${(totals?.calories || 0).toFixed(0)}`}
             color="#4caf50"
           />
         </Grid>
 
-        {/* Nouvelle carte : Jours consécutifs en alerte */}
         {alertStats && (
           <Grid item xs={12} sm={6} md={4} lg={3}>
             <StatsCard
@@ -200,7 +183,6 @@ export default function AmedPage() {
           </Grid>
         )}
 
-        {/* Carte : Nombre de contributeurs */}
         {stats?.contributorsCount !== undefined && (
           <Grid item xs={12} sm={6} md={4} lg={3}>
             <StatsCard
@@ -213,16 +195,13 @@ export default function AmedPage() {
         )}
       </Grid>
 
-      {/* Jauges principales */}
+      {/* Jauges */}
       <Card sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4 }}>
         <Typography 
           variant="h5" 
           gutterBottom 
           fontWeight="bold" 
-          sx={{ 
-            mb: 3,
-            fontSize: { xs: "1.25rem", sm: "1.5rem" }
-          }}
+          sx={{ mb: 3 }}
         >
           Limites quotidiennes recommandées
         </Typography>
@@ -230,7 +209,7 @@ export default function AmedPage() {
           <Grid item xs={12} md={4}>
             <Gauge
               label="Sucre"
-              amount={stats?.totals?.sugar || 0}
+              amount={totals?.sugar || 0}
               max={limits.sugar}
               unit="g"
               icon={<Opacity />}
@@ -240,7 +219,7 @@ export default function AmedPage() {
           <Grid item xs={12} md={4}>
             <Gauge
               label="Calories"
-              amount={stats?.totals?.calories || 0}
+              amount={totals?.calories || 0}
               max={limits.calories}
               unit="kcal"
               icon={<LocalFireDepartment />}
@@ -250,7 +229,7 @@ export default function AmedPage() {
           <Grid item xs={12} md={4}>
             <Gauge
               label="Caféine"
-              amount={stats?.totals?.caffeine || 0}
+              amount={totals?.caffeine || 0}
               max={limits.caffeine}
               unit="mg"
               icon={<LocalDrink />}
@@ -263,40 +242,22 @@ export default function AmedPage() {
       {/* Dernières consommations */}
       {stats?.consumptions && stats.consumptions.length > 0 && (
         <Card sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-          <Typography
-            variant="h5"
-            gutterBottom
-            fontWeight="bold"
-            sx={{ 
-              mb: 2,
-              fontSize: { xs: "1.25rem", sm: "1.5rem" }
-            }}
-          >
+          <Typography variant="h5" gutterBottom fontWeight="bold">
             Dernières consommations 🥤
           </Typography>
           <List>
             {stats.consumptions.map((consumption, index) => (
               <Box key={consumption._id}>
-                <ListItem 
-                  alignItems="flex-start"
-                  sx={{ 
-                    px: { xs: 1, sm: 2 },
-                    flexDirection: { xs: "column", sm: "row" }
-                  }}
-                >
-                  <ListItemAvatar sx={{ minWidth: { xs: 0, sm: 56 }, mb: { xs: 1, sm: 0 } }}>
+                <ListItem alignItems="flex-start">
+                  <ListItemAvatar>
                     <Avatar sx={{ bgcolor: "#2196f3" }}>
                       {consumption.product?.[0]?.toUpperCase() || "?"}
                     </Avatar>
                   </ListItemAvatar>
+
                   <ListItemText
                     primary={
-                      <Box
-                        display="flex"
-                        alignItems="center"
-                        gap={1}
-                        flexWrap="wrap"
-                      >
+                      <Box display="flex" gap={1} flexWrap="wrap">
                         <Typography variant="body1" fontWeight="bold">
                           {consumption.product || "Produit inconnu"}
                         </Typography>
@@ -308,9 +269,7 @@ export default function AmedPage() {
                         />
                         <Chip
                           size="small"
-                          label={`${
-                            consumption.caffeine?.toFixed(0) || 0
-                          }mg caféine`}
+                          label={`${consumption.caffeine?.toFixed(0) || 0}mg caféine`}
                           color="error"
                           variant="outlined"
                         />
@@ -318,46 +277,33 @@ export default function AmedPage() {
                     }
                     secondary={
                       <Box sx={{ mt: 1 }}>
-                        {/* Afficher le contributeur */}
                         {consumption.userId?.username && (
-                          <Typography
-                            variant="body2"
-                            color="primary"
-                            fontWeight="medium"
-                            sx={{ mb: 0.5 }}
-                          >
+                          <Typography variant="body2" color="primary" fontWeight="medium">
                             👤 Ajouté par {consumption.userId.username}
                           </Typography>
                         )}
-                        <Typography variant="body2" color="text.secondary">
-                          {consumption.location && `📍 ${consumption.location}`}
-                        </Typography>
-                        <Box
-                          display="flex"
-                          alignItems="center"
-                          gap={0.5}
-                          sx={{ mt: 0.5 }}
-                        >
+
+                        {consumption.location && (
+                          <Typography variant="body2" color="text.secondary">
+                            📍 {consumption.location}
+                          </Typography>
+                        )}
+
+                        <Box display="flex" alignItems="center" gap={0.5}>
                           <AccessTime sx={{ fontSize: "0.9rem" }} />
                           <Typography variant="caption" color="text.secondary">
-                            {new Date(consumption.createdAt).toLocaleTimeString(
-                              "fr-FR",
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )}
+                            {new Date(consumption.createdAt).toLocaleTimeString("fr-FR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </Typography>
                         </Box>
+
                         {consumption.notes && (
                           <Typography
                             variant="caption"
                             color="text.secondary"
-                            sx={{
-                              fontStyle: "italic",
-                              display: "block",
-                              mt: 0.5,
-                            }}
+                            sx={{ fontStyle: "italic", display: "block" }}
                           >
                             💬 {consumption.notes}
                           </Typography>
@@ -366,6 +312,7 @@ export default function AmedPage() {
                     }
                   />
                 </ListItem>
+
                 {index < stats.consumptions.length - 1 && (
                   <Divider variant="inset" component="li" />
                 )}
@@ -375,7 +322,6 @@ export default function AmedPage() {
         </Card>
       )}
 
-      {/* Message si aucune consommation */}
       {(!stats?.consumptions || stats.consumptions.length === 0) && (
         <Card sx={{ p: 4, textAlign: "center" }}>
           <Typography variant="h6" color="text.secondary">
