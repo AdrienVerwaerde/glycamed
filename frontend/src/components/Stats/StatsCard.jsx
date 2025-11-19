@@ -1,6 +1,12 @@
 import { Card, CardContent, Typography, Box } from "@mui/material";
 
-export default function StatsCard({ icon, label, value, color = "#1976d2" }) {
+export default function StatsCard({ 
+  icon, 
+  label, 
+  value, 
+  subtitle,
+  color = "#1976d2" 
+}) {
   return (
     <Card
       sx={{
@@ -14,23 +20,51 @@ export default function StatsCard({ icon, label, value, color = "#1976d2" }) {
       }}
     >
       <CardContent>
-        <Box display="flex" alignItems="center" mb={2}>
+        <Box display="flex" alignItems="center" mb={2} gap={1.5}>
           <Box
             sx={{
               color,
               fontSize: "2rem",
-              mr: 2,
+              display: "flex",
+              alignItems: "center",
             }}
           >
             {icon}
           </Box>
-          <Typography variant="h6" color="text.secondary">
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              color: "#ffffff",
+              fontSize: { xs: "0.9rem", sm: "1rem", md: "1.1rem" }
+            }}
+          >
             {label}
           </Typography>
         </Box>
-        <Typography variant="h3" component="div" fontWeight="bold">
+        <Typography 
+          variant="h3" 
+          component="div" 
+          fontWeight="bold"
+          sx={{ 
+            color: "#ffffff",
+            fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.75rem" }
+          }}
+        >
           {value}
         </Typography>
+        {subtitle && (
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              color: "#ffffff",
+              opacity: 0.8,
+              mt: 1,
+              display: "block"
+            }}
+          >
+            {subtitle}
+          </Typography>
+        )}
       </CardContent>
     </Card>
   );
