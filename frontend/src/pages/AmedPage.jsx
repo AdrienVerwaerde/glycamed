@@ -92,7 +92,15 @@ export default function AmedPage() {
     ((stats?.totals?.caffeine || 0) / limits.caffeine) * 100;
 
   return (
-    <Box sx={{ width: "100%", p: { xs: 2, md: 4 }, mt: 8 }}>
+    <Box 
+      sx={{ 
+        width: "100%", 
+        maxWidth: "1400px",
+        mx: "auto",
+        p: { xs: 2, sm: 3, md: 4 }, 
+        mt: { xs: 10, sm: 11, md: 8 }
+      }}
+    >
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
@@ -104,7 +112,7 @@ export default function AmedPage() {
         display="flex"
         alignItems="center"
         gap={2}
-        sx={{ mb: 4 }}
+        sx={{ mb: 3 }}
         flexWrap="wrap"
       >
         <Typography
@@ -112,13 +120,23 @@ export default function AmedPage() {
           component="h1"
           fontWeight="bold"
           color="#ffffff"
+          sx={{
+            fontSize: { xs: "1.75rem", sm: "2.25rem", md: "3rem" }
+          }}
         >
-          Dashboard d'Amed 🎯
+          Dashboard d'Amed
         </Typography>
         <AlertBadge />
       </Box>
 
-      <Typography variant="subtitle1" color="#ffffff" sx={{ mb: 4 }}>
+      <Typography 
+        variant="subtitle1" 
+        color="#ffffff" 
+        sx={{ 
+          mb: 4,
+          fontSize: { xs: "0.875rem", sm: "1rem" }
+        }}
+      >
         Suivi en temps réel de la consommation d'aujourd'hui
       </Typography>
 
@@ -131,8 +149,8 @@ export default function AmedPage() {
       </Box>
 
       {/* Cartes de statistiques rapides */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <StatsCard
             icon={<Assessment />}
             label="Consommations"
@@ -140,7 +158,7 @@ export default function AmedPage() {
             color="#2196f3"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <StatsCard
             icon={<Opacity />}
             label="Sucre total"
@@ -148,7 +166,7 @@ export default function AmedPage() {
             color="#ff9800"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <StatsCard
             icon={<LocalDrink />}
             label="Caféine totale"
@@ -156,7 +174,7 @@ export default function AmedPage() {
             color="#f44336"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <StatsCard
             icon={<LocalFireDepartment />}
             label="Calories totales"
@@ -167,7 +185,7 @@ export default function AmedPage() {
 
         {/* Nouvelle carte : Jours consécutifs en alerte */}
         {alertStats && (
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
             <StatsCard
               icon={<Warning />}
               label="Jours d'alerte consécutifs"
@@ -184,7 +202,7 @@ export default function AmedPage() {
 
         {/* Carte : Nombre de contributeurs */}
         {stats?.contributorsCount !== undefined && (
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
             <StatsCard
               icon="👥"
               label="Contributeurs aujourd'hui"
@@ -196,11 +214,19 @@ export default function AmedPage() {
       </Grid>
 
       {/* Jauges principales */}
-      <Card sx={{ p: 4, mb: 4 }}>
-        <Typography variant="h5" gutterBottom fontWeight="bold" sx={{ mb: 3 }}>
+      <Card sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4 }}>
+        <Typography 
+          variant="h5" 
+          gutterBottom 
+          fontWeight="bold" 
+          sx={{ 
+            mb: 3,
+            fontSize: { xs: "1.25rem", sm: "1.5rem" }
+          }}
+        >
           Limites quotidiennes recommandées
         </Typography>
-        <Grid container spacing={4}>
+        <Grid container spacing={{ xs: 3, sm: 4 }}>
           <Grid item xs={12} md={4}>
             <Gauge
               label="Sucre"
@@ -236,20 +262,29 @@ export default function AmedPage() {
 
       {/* Dernières consommations */}
       {stats?.consumptions && stats.consumptions.length > 0 && (
-        <Card sx={{ p: 4 }}>
+        <Card sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
           <Typography
             variant="h5"
             gutterBottom
             fontWeight="bold"
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2,
+              fontSize: { xs: "1.25rem", sm: "1.5rem" }
+            }}
           >
             Dernières consommations 🥤
           </Typography>
           <List>
             {stats.consumptions.map((consumption, index) => (
               <Box key={consumption._id}>
-                <ListItem alignItems="flex-start">
-                  <ListItemAvatar>
+                <ListItem 
+                  alignItems="flex-start"
+                  sx={{ 
+                    px: { xs: 1, sm: 2 },
+                    flexDirection: { xs: "column", sm: "row" }
+                  }}
+                >
+                  <ListItemAvatar sx={{ minWidth: { xs: 0, sm: 56 }, mb: { xs: 1, sm: 0 } }}>
                     <Avatar sx={{ bgcolor: "#2196f3" }}>
                       {consumption.product?.[0]?.toUpperCase() || "?"}
                     </Avatar>
