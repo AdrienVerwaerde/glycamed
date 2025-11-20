@@ -114,7 +114,6 @@ export const createConsumption = async (
   try {
     const {
       product,
-      productImage,
       quantity,
       location,
       userId,
@@ -122,7 +121,6 @@ export const createConsumption = async (
       sugar,
       calories,
       notes,
-      createdAt,
     } = req.body;
 
     // Validation
@@ -163,7 +161,6 @@ export const createConsumption = async (
 
     const consumption = await Consumption.create({
       product,
-      productImage: productImage || "",
       quantity,
       location,
       userId,
@@ -171,7 +168,6 @@ export const createConsumption = async (
       sugar: sugar || 0,
       calories: calories || 0,
       notes: notes || "",
-      createdAt: createdAt || new Date(),
     });
 
     res.status(201).json({

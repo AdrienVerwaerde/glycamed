@@ -11,7 +11,6 @@ let theme = createTheme({
     h1: { ...titles },
     h2: { ...titles },
     h3: { ...titles },
-    h4: { ...titles },
     h5: {
       fontFamily: "Golos Text",
       fontSize: "20px",
@@ -26,18 +25,6 @@ let theme = createTheme({
       },
     },
     MuiButton: {
-      variants: [
-        {
-          props: { variant: "cancel" },
-          style: {
-            backgroundColor: "var(--color-red)",
-            color: "var(--color-white)",
-            "&:hover": {
-              boxShadow: "0px 0px 8px var(--color-red)",
-            },
-          },
-        },
-      ],
       styleOverrides: {
         root: {
           backgroundColor: "var(--color-yellow)",
@@ -68,17 +55,6 @@ let theme = createTheme({
               borderColor: "var(--color-yellow)",
             },
           },
-        },
-      },
-    },
-    MuiAccordion: {
-      styleOverrides: {
-        root: {
-          border: "1px solid var(--color-yellow)",
-          "&:before": {
-            display: "none",
-          },
-          boxShadow: "none",
         },
       },
     },
