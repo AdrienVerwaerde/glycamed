@@ -10,9 +10,14 @@ const links = [
     url: "/reports",
   },
   {
-    id: 2,
+    id: 3,
     title: "🔒Amed",
     url: "/amed",
+  },
+  {
+    id: 4,
+    title: "Top Contributeurs",
+    url: "/contributors",
   },
 ];
 

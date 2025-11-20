@@ -9,6 +9,7 @@ import {
   getUserConsumptionStats,
   getAmedTodayStats,
   checkAndCreateAlert,
+  getLeaderboard,
 } from "../controllers/consumptionController";
 
 const router = express.Router();
@@ -33,5 +34,7 @@ router
   .get(getConsumptionById)
   .put(updateConsumption)
   .delete(deleteConsumption);
+
+router.get("/leaderboard", getLeaderboard);
 
 export default router;

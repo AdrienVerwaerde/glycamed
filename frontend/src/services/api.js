@@ -99,6 +99,9 @@ export const consumptionAPI = {
 
   // Delete consumption
   delete: (id) => api.delete(`/consumptions/${id}`),
+
+  // Get leaderboard
+  getLeaderboard: () => api.get("/consumptions/leaderboard"),
 };
 
 // Products API calls

@@ -8,7 +8,8 @@ export function ConsumptionProvider({ children }) {
   const { user, isAuthenticated } = useAuth();
 
   const [consumptions, setConsumptions] = useState([]);
-  const [stats, setStats] = useState(null); // ← NEW
+  const [stats, setStats] = useState(null);
+  const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,6 +21,7 @@ export function ConsumptionProvider({ children }) {
     } else {
       setConsumptions([]);
       setStats(null);
+      setLeaderboard([]);
       setLoading(false);
     }
   }, [isAuthenticated, user]);
@@ -29,8 +31,11 @@ export function ConsumptionProvider({ children }) {
       setLoading(true);
       setError(null);
 
-      await Promise.all([fetchUserConsumptions(), fetchAmedStats()]);
-
+      await Promise.all([
+        fetchUserConsumptions(),
+        fetchAmedStats(),
+        fetchLeaderboard(),
+      ]);
     } catch (err) {
       console.error("Global fetch error:", err);
       setError(err.message || "Erreur lors du chargement des données");
@@ -58,7 +63,16 @@ export function ConsumptionProvider({ children }) {
       setStats(res.data.data || null);
     } catch (err) {
       console.error("Error fetching global stats:", err);
-      // on n'efface pas les anciennes stats si le backend fail	  
+      // on n'efface pas les anciennes stats si le backend fail
+    }
+  };
+
+  const fetchLeaderboard = async () => {
+    try {
+      const { data } = await consumptionAPI.getLeaderboard();
+      setLeaderboard(data.data || []);
+    } catch (err) {
+      console.error("Error fetching leaderboard:", err);
     }
   };
 
@@ -86,6 +100,7 @@ export function ConsumptionProvider({ children }) {
 
       // refresh global stats (AmedPage)
       fetchAmedStats();
+      fetchLeaderboard(); // refresh leaderboard après ajout
 
       // optional alert check
       try {
@@ -109,6 +124,7 @@ export function ConsumptionProvider({ children }) {
       );
 
       fetchAmedStats();
+      fetchLeaderboard();
 
       return updated;
     } catch (err) {
@@ -122,11 +138,11 @@ export function ConsumptionProvider({ children }) {
       setConsumptions((prev) => prev.filter((c) => c._id !== id));
 
       fetchAmedStats();
+      fetchLeaderboard();
 
       try {
         await consumptionAPI.checkAlert();
       } catch (_) {}
-
     } catch (err) {
       throw new Error(err.response?.data?.error || err.message);
     }
@@ -141,12 +157,12 @@ export function ConsumptionProvider({ children }) {
     { sugar: 0, calories: 0, caffeine: 0 }
   );
 
-
   return (
     <ConsumptionContext.Provider
       value={{
         consumptions,
         stats,
+        leaderboard,
         totals,
         loading,
         error,
