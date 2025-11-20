@@ -582,3 +582,161 @@ export const getMonthlyConsumptions = async (
     });
   }
 };
+
+// @desc    Get contributors leaderboard
+// @route   GET /api/consumptions/leaderboard
+// @access  Public
+
+export const getLeaderboard = async (
+  req: Request,
+
+  res: Response
+): Promise<void> => {
+  try {
+    const amedUser = await User.findOne({ role: "amed" });
+
+    if (!amedUser) {
+      res.status(404).json({
+        success: false,
+
+        error: "Utilisateur Amed non trouvé",
+      });
+
+      return;
+    }
+
+    const allConsumptions = await Consumption.find({ userId: amedUser._id })
+
+      .populate("userId", "username email")
+
+      .sort({ createdAt: -1 });
+
+    const contributorsMap = new Map();
+
+    allConsumptions.forEach((consumption: any) => {
+      const addedById = consumption.userId?._id?.toString();
+
+      if (!addedById) return;
+
+      if (!contributorsMap.has(addedById)) {
+        contributorsMap.set(addedById, {
+          userId: addedById,
+
+          username: consumption.userId?.username || "Inconnu",
+
+          totalContributions: 0,
+
+          lastContribution: consumption.createdAt,
+
+          contributions: [],
+        });
+      }
+
+      const contributor = contributorsMap.get(addedById);
+
+      contributor.totalContributions++;
+
+      contributor.contributions.push(consumption.createdAt);
+    });
+
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    const firstMonthDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+    const contributors = Array.from(contributorsMap.values()).map(
+      (contributor) => {
+        // Top
+
+        const monthlyContributions = contributor.contributions.filter(
+          (date: Date) => date >= firstMonthDay && date < nextMonth
+        ).length;
+
+        // Streak
+
+        const sortedDates = contributor.contributions
+
+          .map((d: Date) => new Date(d).setHours(0, 0, 0, 0))
+
+          .sort((a: number, b: number) => b - a);
+
+        let streakDays = 0;
+
+        let currentDate = today.getTime();
+
+        for (const date of sortedDates) {
+          if (date === currentDate) {
+            streakDays++;
+
+            currentDate -= 24 * 60 * 60 * 1000; // Jour précédent
+          } else {
+            break;
+          }
+        }
+
+        const todayContributions = contributor.contributions.filter(
+          (date: Date) =>
+            new Date(date).setHours(0, 0, 0, 0) === today.getTime()
+        );
+
+        const isFirstToday =
+          todayContributions.length > 0 &&
+          todayContributions[0].getTime() ===
+            Math.min(...todayContributions.map((d: Date) => d.getTime()));
+
+        return {
+          userId: contributor.userId,
+
+          username: contributor.username,
+
+          totalContributions: contributor.totalContributions,
+
+          lastContribution: contributor.lastContribution,
+
+          badges: {
+            monthlyContributions,
+
+            streakDays,
+
+            isFirstToday,
+
+            isTopMonthly: false,
+          },
+        };
+      }
+    );
+
+    // Trier par nombre total de contributions
+
+    contributors.sort((a, b) => b.totalContributions - a.totalContributions);
+
+    // Identifier le top contributeur du mois
+
+    if (contributors.length > 0) {
+      const topMonthly = contributors.reduce((max, curr) =>
+        curr.badges.monthlyContributions > max.badges.monthlyContributions
+          ? curr
+          : max
+      );
+
+      topMonthly.badges.isTopMonthly = true;
+    }
+
+    res.status(200).json({
+      success: true,
+
+      data: contributors,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+
+      error: "Server Error",
+
+      message: error.message,
+    });
+  }
+};

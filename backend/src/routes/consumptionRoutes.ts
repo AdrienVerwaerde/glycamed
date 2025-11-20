@@ -11,6 +11,7 @@ import {
   getLastNDaysConsumptions,
   getWeeklyConsumptions,
   getMonthlyConsumptions,
+  getLeaderboard,
 } from "../controllers/consumptionController";
 
 const router = express.Router();
@@ -35,5 +36,8 @@ router
   .get(getConsumptionById)
   .put(updateConsumption)
   .delete(deleteConsumption);
+
+// Leaderboard route
+router.get("/leaderboard", getLeaderboard);
 
 export default router;

@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/Auth/ProtectedRoute";
 import ProtectedAmedRoute from "./components/Auth/ProtectedAmedRoute";
 import AmedPage from "./pages/AmedPage";
 import Layout from "./components/Layout";
+import ContributorsPage from "./pages/ContributorsPage";
 
 export default function App() {
   return (
@@ -22,6 +23,14 @@ export default function App() {
                 <ProtectedAmedRoute>
                   <AmedPage />
                 </ProtectedAmedRoute>
+              }
+            />
+            <Route
+              path="/contributors"
+              element={
+                <ProtectedRoute>
+                  <ContributorsPage />
+                </ProtectedRoute>
               }
             />
           </Route>
