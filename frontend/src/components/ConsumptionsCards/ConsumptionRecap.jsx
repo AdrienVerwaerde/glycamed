@@ -190,6 +190,7 @@ export default function ConsumptionRecap() {
         </AccordionSummary>
         <AccordionDetails>
           {renderAccordionContent("last3Days")}
+          <DownloadCSVButton data={recapData.last3Days} />
         </AccordionDetails>
       </Accordion>
 

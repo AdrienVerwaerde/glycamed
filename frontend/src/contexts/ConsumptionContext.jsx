@@ -10,7 +10,8 @@ export function ConsumptionProvider({ children }) {
   const { user, isAuthenticated } = useAuth();
 
   const [consumptions, setConsumptions] = useState([]);
-  const [stats, setStats] = useState(null); // ← NEW
+  const [stats, setStats] = useState(null);
+  const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -54,10 +55,24 @@ export function ConsumptionProvider({ children }) {
     }
   };
 
+  const fetchLeaderboard = async () => {
+    try {
+      const { data } = await consumptionAPI.getLeaderboard();
+
+      setLeaderboard(data.data || []);
+    } catch (err) {
+      console.error("Error fetching leaderboard:", err);
+    }
+  };
+
   // Fetch consumptions on mount
   useEffect(() => {
     console.log("Fetching data...");
     fetchTodayConsumptions();
+  }, []);
+
+  useEffect(() => {
+    fetchLeaderboard();
   }, []);
 
   useEffect(() => {
@@ -134,12 +149,7 @@ export function ConsumptionProvider({ children }) {
       const response = await consumptionAPI.update(id, consumptionData);
       const updated = response.data?.data || response.data;
 
-      setConsumptions((prev) =>
-        prev.map((c) => (c._id === id ? updated : c))
-      );
-
-      fetchAmedStats();
-
+      setConsumptions((prev) => prev.map((c) => (c._id === id ? updated : c)));
       return updated;
     } catch (err) {
       throw new Error(err.response?.data?.error || err.message);
@@ -182,6 +192,8 @@ export function ConsumptionProvider({ children }) {
         limits,
         loading,
         error,
+        leaderboard,
+        fetchLeaderboard,
 
         addConsumption,
         updateConsumption,
