@@ -6,20 +6,15 @@ import {
   CircularProgress,
   Alert,
   Typography,
-  Divider,
   List,
   ListItem,
   ListItemText,
-  ListItemAvatar,
-  Avatar,
-  Chip,
 } from "@mui/material";
 import {
   Opacity,
   LocalFireDepartment,
   LocalDrink,
   Assessment,
-  AccessTime,
   Warning,
 } from "@mui/icons-material";
 import Gauge from "../components/Gauge/Gauge";
@@ -30,10 +25,17 @@ import { alertAPI } from "../services/api";
 import { useConsumption } from "../contexts/ConsumptionContext";
 
 export default function AmedPage() {
-  // 🔥 On récupère stats, loading et error comme dans HomePage
-  const { totals, stats, loading, error } = useConsumption();
+  const { totals, stats, loading, error, consumptions } = useConsumption();
 
   const [alertStats, setAlertStats] = useState(null);
+
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   const limits = {
     sugar: 50,
@@ -41,7 +43,6 @@ export default function AmedPage() {
     caffeine: 400,
   };
 
-  // 👉 On garde l'appel pour les statistiques d'alertes
   useEffect(() => {
     fetchAlertStats();
     const interval = setInterval(fetchAlertStats, 30000);
@@ -57,32 +58,25 @@ export default function AmedPage() {
     }
   };
 
-  // Même affichage loading que HomePage
   if (loading && !stats) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="80vh"
-      >
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
         <CircularProgress size={60} />
       </Box>
     );
   }
 
   const sugarPercent = ((totals?.sugar || 0) / limits.sugar) * 100;
-  const caffeinePercent =
-    ((totals?.caffeine || 0) / limits.caffeine) * 100;
+  const caffeinePercent = ((totals?.caffeine || 0) / limits.caffeine) * 100;
 
   return (
-    <Box 
-      sx={{ 
-        width: "100%", 
+    <Box
+      sx={{
+        width: "100%",
         maxWidth: "1400px",
         mx: "auto",
-        p: { xs: 2, sm: 3, md: 4 }, 
-        mt: { xs: 10, sm: 11, md: 8 }
+        p: { xs: 2, sm: 3, md: 4 },
+        mt: { xs: 10, sm: 11, md: 8 },
       }}
     >
       {error && (
@@ -91,57 +85,41 @@ export default function AmedPage() {
         </Alert>
       )}
 
-      {/* En-tête */}
-      <Box
-        display="flex"
-        alignItems="center"
-        gap={2}
-        sx={{ mb: 3 }}
-        flexWrap="wrap"
-      >
+      <Box display="flex" alignItems="center" gap={2} sx={{ mb: 3 }} flexWrap="wrap">
         <Typography
           variant="h3"
           component="h1"
           fontWeight="bold"
           color="#ffffff"
-          sx={{
-            fontSize: { xs: "1.75rem", sm: "2.25rem", md: "3rem" }
-          }}
+          sx={{ fontSize: { xs: "1.75rem", sm: "2.25rem", md: "3rem" } }}
         >
           Dashboard d'Amed
         </Typography>
         <AlertBadge />
       </Box>
 
-      <Typography 
-        variant="subtitle1" 
-        color="#ffffff" 
-        sx={{ 
-          mb: 4,
-          fontSize: { xs: "0.875rem", sm: "1rem" }
-        }}
+      <Typography
+        variant="subtitle1"
+        color="#ffffff"
+        sx={{ mb: 4, fontSize: { xs: "0.875rem", sm: "1rem" } }}
       >
         Suivi en temps réel de la consommation d'aujourd'hui
       </Typography>
 
-      {/* Statut de santé */}
       <Box sx={{ mb: 4 }}>
-        <HealthStatus
-          sugarPercent={sugarPercent}
-          caffeinePercent={caffeinePercent}
-        />
+        <HealthStatus sugarPercent={sugarPercent} caffeinePercent={caffeinePercent} />
       </Box>
 
-      {/* Stats cards */}
       <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={4} lg={3}>
           <StatsCard
             icon={<Assessment />}
             label="Consommations"
-            value={stats?.consumptionsCount || 0}
+            value={consumptions.length}
             color="#2196f3"
           />
         </Grid>
+
         <Grid item xs={12} sm={6} md={4} lg={3}>
           <StatsCard
             icon={<Opacity />}
@@ -150,6 +128,7 @@ export default function AmedPage() {
             color="#ff9800"
           />
         </Grid>
+
         <Grid item xs={12} sm={6} md={4} lg={3}>
           <StatsCard
             icon={<LocalDrink />}
@@ -158,6 +137,7 @@ export default function AmedPage() {
             color="#f44336"
           />
         </Grid>
+
         <Grid item xs={12} sm={6} md={4} lg={3}>
           <StatsCard
             icon={<LocalFireDepartment />}
@@ -174,9 +154,7 @@ export default function AmedPage() {
               label="Jours d'alerte consécutifs"
               value={alertStats.consecutiveDays}
               subtitle={
-                alertStats.currentStreak
-                  ? "⚠️ Série en cours"
-                  : "✅ Pas d'alerte aujourd'hui"
+                alertStats.currentStreak ? "⚠️ Série en cours" : "✅ Pas d'alerte aujourd'hui"
               }
               color={alertStats.currentStreak ? "#f44336" : "#4caf50"}
             />
@@ -195,16 +173,11 @@ export default function AmedPage() {
         )}
       </Grid>
 
-      {/* Jauges */}
       <Card sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4 }}>
-        <Typography 
-          variant="h5" 
-          gutterBottom 
-          fontWeight="bold" 
-          sx={{ mb: 3 }}
-        >
+        <Typography variant="h5" gutterBottom fontWeight="bold" sx={{ mb: 3 }}>
           Limites quotidiennes recommandées
         </Typography>
+
         <Grid container spacing={{ xs: 3, sm: 4 }}>
           <Grid item xs={12} md={4}>
             <Gauge
@@ -212,117 +185,75 @@ export default function AmedPage() {
               amount={totals?.sugar || 0}
               max={limits.sugar}
               unit="g"
-              icon={<Opacity />}
-              thresholds={{ low: 60, medium: 80 }}
             />
           </Grid>
+
           <Grid item xs={12} md={4}>
             <Gauge
               label="Calories"
               amount={totals?.calories || 0}
               max={limits.calories}
               unit="kcal"
-              icon={<LocalFireDepartment />}
-              thresholds={{ low: 60, medium: 80 }}
             />
           </Grid>
+
           <Grid item xs={12} md={4}>
             <Gauge
               label="Caféine"
               amount={totals?.caffeine || 0}
               max={limits.caffeine}
               unit="mg"
-              icon={<LocalDrink />}
-              thresholds={{ low: 60, medium: 80 }}
             />
           </Grid>
         </Grid>
       </Card>
 
-      {/* Dernières consommations */}
-      {stats?.consumptions && stats.consumptions.length > 0 && (
+      {/* ==== LISTE DES CONSOMMATIONS ==== */}
+      {consumptions.length > 0 && (
         <Card sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
           <Typography variant="h5" gutterBottom fontWeight="bold">
-            Dernières consommations 🥤
+            Consommations reportées aujourd'hui
           </Typography>
-          <List>
-            {stats.consumptions.map((consumption, index) => (
-              <Box key={consumption._id}>
-                <ListItem alignItems="flex-start">
-                  <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: "#2196f3" }}>
-                      {consumption.product?.[0]?.toUpperCase() || "?"}
-                    </Avatar>
-                  </ListItemAvatar>
 
-                  <ListItemText
-                    primary={
-                      <Box display="flex" gap={1} flexWrap="wrap">
-                        <Typography variant="body1" fontWeight="bold">
-                          {consumption.product || "Produit inconnu"}
-                        </Typography>
-                        <Chip
-                          size="small"
-                          label={`${consumption.sugar?.toFixed(1) || 0}g sucre`}
-                          color="warning"
-                          variant="outlined"
-                        />
-                        <Chip
-                          size="small"
-                          label={`${consumption.caffeine?.toFixed(0) || 0}mg caféine`}
-                          color="error"
-                          variant="outlined"
-                        />
-                      </Box>
-                    }
-                    secondary={
-                      <Box sx={{ mt: 1 }}>
-                        {consumption.userId?.username && (
-                          <Typography variant="body2" color="primary" fontWeight="medium">
-                            👤 Ajouté par {consumption.userId.username}
-                          </Typography>
-                        )}
+          <List sx={{ width: "100%", bgcolor: "background.paper" }}>
+            {consumptions.map((consumption, index) => (
+              <ListItem
+                key={consumption._id}
+                sx={{
+                  borderRadius: 1,
+                  mb: index < consumptions.length - 1 ? 1 : 0,
+                  bgcolor: "action.hover",
+                }}
+              >
+                <ListItemText
+                  primary={
+                    <Typography variant="subtitle1" fontWeight="medium">
+                      {consumption.product}
+                    </Typography>
+                  }
+                  secondary={
+                    <Box component="span">
+                      <Typography variant="body2" color="text.secondary" display="block">
+                        {formatTime(consumption.createdAt)}
+                      </Typography>
 
-                        {consumption.location && (
-                          <Typography variant="body2" color="text.secondary">
-                            📍 {consumption.location}
-                          </Typography>
-                        )}
+                      <Typography variant="body2" color="text.secondary" display="block">
+                        <b>Lieu :</b> {consumption.location}
+                      </Typography>
 
-                        <Box display="flex" alignItems="center" gap={0.5}>
-                          <AccessTime sx={{ fontSize: "0.9rem" }} />
-                          <Typography variant="caption" color="text.secondary">
-                            {new Date(consumption.createdAt).toLocaleTimeString("fr-FR", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </Typography>
-                        </Box>
-
-                        {consumption.notes && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ fontStyle: "italic", display: "block" }}
-                          >
-                            💬 {consumption.notes}
-                          </Typography>
-                        )}
-                      </Box>
-                    }
-                  />
-                </ListItem>
-
-                {index < stats.consumptions.length - 1 && (
-                  <Divider variant="inset" component="li" />
-                )}
-              </Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Sucre: {consumption.sugar}g • Calories: {consumption.calories}kcal • Caféine: {consumption.caffeine}mg
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </ListItem>
             ))}
           </List>
         </Card>
       )}
 
-      {(!stats?.consumptions || stats.consumptions.length === 0) && (
+      {consumptions.length === 0 && (
         <Card sx={{ p: 4, textAlign: "center" }}>
           <Typography variant="h6" color="text.secondary">
             Aucune consommation enregistrée aujourd'hui 🎉
