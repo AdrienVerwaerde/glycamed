@@ -37,6 +37,16 @@ let theme = createTheme({
             },
           },
         },
+        {
+          props: { variant: "download" },
+          style: {
+            backgroundColor: "green",
+            color: "var(--color-white)",
+            "&:hover": {
+              boxShadow: "0px 0px 8px green",
+            },
+          },
+        },
       ],
       styleOverrides: {
         root: {
