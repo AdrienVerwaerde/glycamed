@@ -52,13 +52,44 @@ export default function Gauge({
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-        {icon && <Box sx={{ mr: 1, color: getColor() }}>{icon}</Box>}
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+      <Box 
+        sx={{ 
+          display: "flex", 
+          alignItems: "center", 
+          mb: 1.5,
+          gap: 1
+        }}
+      >
+        {icon && <Box sx={{ color: getColor(), fontSize: "1.5rem" }}>{icon}</Box>}
+        <Typography 
+          variant="h6" 
+          component="div" 
+          sx={{ 
+            flexGrow: 1,
+            fontSize: { xs: "1rem", sm: "1.15rem" }
+          }}
+        >
           {label}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {safeAmount.toFixed(1)} / {max} {unit}
+      </Box>
+
+      <Box sx={{ mb: 1.5 }}>
+        <Typography 
+          variant="h4" 
+          fontWeight="bold"
+          sx={{
+            fontSize: { xs: "1.5rem", sm: "2rem" }
+          }}
+        >
+          {safeAmount.toFixed(1)}
+          <Typography 
+            component="span" 
+            variant="h6" 
+            color="text.secondary"
+            sx={{ ml: 0.5 }}
+          >
+            / {max} {unit}
+          </Typography>
         </Typography>
       </Box>
 
@@ -68,7 +99,7 @@ export default function Gauge({
         severity={severity}
       />
 
-      <Box sx={{ display: "flex", justifyContent: "space-between", mt: 0.5 }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1, flexWrap: "wrap", gap: 1 }}>
         <Typography variant="caption" color="text.secondary">
           {actualPercentage.toFixed(1)}% de la limite
         </Typography>

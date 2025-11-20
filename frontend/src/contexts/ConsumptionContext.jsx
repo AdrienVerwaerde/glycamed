@@ -8,7 +8,9 @@ const ConsumptionContext = createContext();
 
 export function ConsumptionProvider({ children }) {
   const { user, isAuthenticated } = useAuth();
+
   const [consumptions, setConsumptions] = useState([]);
+  const [stats, setStats] = useState(null); // ← NEW
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -123,9 +125,7 @@ export function ConsumptionProvider({ children }) {
       return newConsumption;
     } catch (err) {
       console.error("Error adding consumption:", err);
-      const errorMessage = err.response?.data?.error || err.message;
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      throw new Error(err.response?.data?.error || err.message);
     }
   };
 
@@ -134,13 +134,15 @@ export function ConsumptionProvider({ children }) {
       const response = await consumptionAPI.update(id, consumptionData);
       const updated = response.data?.data || response.data;
 
-      setConsumptions(consumptions.map((c) => (c._id === id ? updated : c)));
+      setConsumptions((prev) =>
+        prev.map((c) => (c._id === id ? updated : c))
+      );
+
+      fetchAmedStats();
+
       return updated;
     } catch (err) {
-      console.error("Error updating consumption:", err);
-      const errorMessage = err.response?.data?.error || err.message;
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      throw new Error(err.response?.data?.error || err.message);
     }
   };
 
@@ -150,10 +152,7 @@ export function ConsumptionProvider({ children }) {
       setConsumptions(consumptions.filter((c) => c._id !== id));
       console.log("Consumption removed");
     } catch (err) {
-      console.error("Error removing consumption:", err);
-      const errorMessage = err.response?.data?.error || err.message;
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      throw new Error(err.response?.data?.error || err.message);
     }
   };
 
@@ -178,10 +177,12 @@ export function ConsumptionProvider({ children }) {
     <ConsumptionContext.Provider
       value={{
         consumptions,
+        stats,
         totals,
         limits,
         loading,
         error,
+
         addConsumption,
         updateConsumption,
         removeConsumption,
@@ -195,9 +196,7 @@ export function ConsumptionProvider({ children }) {
 }
 
 export function useConsumption() {
-  const context = useContext(ConsumptionContext);
-  if (!context) {
-    throw new Error("useConsumption must be used within ConsumptionProvider");
-  }
-  return context;
+  const ctx = useContext(ConsumptionContext);
+  if (!ctx) throw new Error("useConsumption must be used within a provider");
+  return ctx;
 }
