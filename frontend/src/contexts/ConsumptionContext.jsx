@@ -16,7 +16,7 @@ export function ConsumptionProvider({ children }) {
   useEffect(() => {
     if (isAuthenticated && user) {
       loadAllData();
-      const interval = setInterval(loadAllData, 30000); // refresh every 30s
+      const interval = setInterval(loadAllData, 100000);
       return () => clearInterval(interval);
     } else {
       setConsumptions([]);
