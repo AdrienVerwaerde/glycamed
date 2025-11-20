@@ -1,3 +1,4 @@
+// src/services/api.js
 import axios from "axios";
 import { API_URL } from "../config";
 
@@ -77,18 +78,6 @@ export const alertAPI = {
 export const consumptionAPI = {
   // Get all consumptions
   getAll: () => api.get("/consumptions"),
-
-  // Get today's consumptions
-  getTodayConsumptions: () => api.get("/consumptions/today"),
-
-  // Get last N days consumptions
-  getLastNDays: (days) => api.get(`/consumptions/last/${days}`),
-
-  // Get weekly consumptions
-  getWeeklyConsumptions: () => api.get("/consumptions/weekly"),
-
-  // Get monthly consumptions
-  getMonthlyConsumptions: () => api.get("/consumptions/monthly"),
 
   // Get consumptions by user ID
   getByUserId: (userId) => api.get(`/consumptions/user/${userId}`),

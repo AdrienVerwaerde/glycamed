@@ -2,7 +2,6 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface IConsumption extends Document {
   product: string;
-  productImage?: string;
   quantity: number;
   location: string;
   userId: string;
@@ -20,10 +19,6 @@ const ConsumptionSchema = new Schema<IConsumption>(
       type: String,
       required: [true, "Product name is required"],
       trim: true,
-    },
-    productImage: {
-      type: String,
-      default: "",
     },
     quantity: {
       type: Number,

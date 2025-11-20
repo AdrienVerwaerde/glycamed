@@ -16,7 +16,7 @@ export default function ProtectedRoute({ children, requiredRole }) {
           height: "100vh",
         }}
       >
-        <CircularProgress sx={{ color: "var(--color-background)" }} size={24} />
+        <CircularProgress />
       </Box>
     );
   }

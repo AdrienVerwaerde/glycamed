@@ -1,5 +1,5 @@
 .App {
-  background: linear-gradient(135deg, rgba(20, 20, 20, 1) 50%, rgb(6, 16, 55) 100%);
+  background-color: var(--color-background);
   min-height: 100vh;
   display: flex;
   flex-direction: column;

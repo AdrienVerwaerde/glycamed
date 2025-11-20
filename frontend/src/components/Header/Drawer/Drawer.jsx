@@ -61,10 +61,9 @@ export default function AnchorTemporaryDrawer() {
           top: 15,
           right: 25,
           fontSize: "32px",
-          "&:hover": { cursor: "pointer" },
         }}
       />
-      <List sx={{ width: "100%" }}>
+      <List>
         {links.map((link) => (
           <ListItem
             key={link.id}
@@ -73,7 +72,6 @@ export default function AnchorTemporaryDrawer() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              p: 2,
             }}
           >
             <ListItemButton
@@ -92,8 +90,7 @@ export default function AnchorTemporaryDrawer() {
           backgroundColor: "var(--color-yellow)",
           borderWidth: "1px",
           width: "80%",
-          mt: 2,
-          mb: 4,
+          my: 2,
         }}
       />
 
@@ -108,7 +105,12 @@ export default function AnchorTemporaryDrawer() {
         >
           {isAuthenticated ? (
             <Button
-              variant="cancel"
+              sx={{
+                backgroundColor: "var(--color-red)",
+                color: "var(--color-white)",
+                width: "100%",
+                mt: 1,
+              }}
               onClick={(e) => {
                 handleLogout();
                 toggleDrawer(anchor, false)(e);
@@ -140,19 +142,13 @@ export default function AnchorTemporaryDrawer() {
             sx={{
               color: "var(--color-yellow)",
               fontSize: "32px",
-              mr: "22px",
-              "&:hover": { cursor: "pointer" },
+              pr: "22px",
             }}
           />
           <Drawer
             anchor={anchor}
             open={state[anchor]}
             onClose={toggleDrawer(anchor, false)}
-            sx={{
-              "& .MuiDrawer-paper": {
-                borderRadius: "0px",
-              },
-            }}
           >
             {list(anchor)}
           </Drawer>

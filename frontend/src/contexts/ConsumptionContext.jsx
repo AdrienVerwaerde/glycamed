@@ -136,7 +136,6 @@ export function ConsumptionProvider({ children }) {
     try {
       const payload = {
         product: consumptionData.product_name,
-        productImage: consumptionData.product_image || "",
         quantity: consumptionData.quantity,
         location: consumptionData.location,
         userId: user.id,
@@ -170,8 +169,8 @@ export function ConsumptionProvider({ children }) {
   // ---- UPDATE ----
   const updateConsumption = async (id, consumptionData) => {
     try {
-      const response = await consumptionAPI.update(id, consumptionData);
-      const updated = response.data?.data || response.data;
+      const { data } = await consumptionAPI.update(id, consumptionData);
+      const updated = data.data;
 
       setConsumptions((prev) =>
         prev.map((c) => (c._id === id ? updated : c))
@@ -227,7 +226,6 @@ export function ConsumptionProvider({ children }) {
         stats,
         leaderboard,
         totals,
-        limits,
         loading,
         error,
 

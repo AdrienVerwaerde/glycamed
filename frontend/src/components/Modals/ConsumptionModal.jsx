@@ -184,8 +184,6 @@ export default function ConsumptionModal({ open, onClose }) {
         product_name: `${selectedProduct.name}${
           selectedProduct.brand ? ` - ${selectedProduct.brand}` : ""
         }`,
-        productImage:
-          selectedProduct.imageUrl || selectedProduct.image_url || "",
         quantity: formData.quantity,
         location: formData.location,
         notes: formData.notes,
@@ -234,14 +232,7 @@ export default function ConsumptionModal({ open, onClose }) {
                 }}
               />
               <Button onClick={handleSearch} disabled={searchLoading}>
-                {searchLoading ? (
-                  <CircularProgress
-                    size={24}
-                    sx={{ color: "var(--color-background)" }}
-                  />
-                ) : (
-                  "Rechercher"
-                )}
+                {searchLoading ? <CircularProgress size={24} /> : "Rechercher"}
               </Button>
               {/* <Button
                 onClick={handleBarcodeSearch}
@@ -356,7 +347,7 @@ export default function ConsumptionModal({ open, onClose }) {
                 }}
               >
                 <Typography variant="subtitle2" gutterBottom>
-                  Valeurs nutritionnelles ({formData.quantity}ml) :
+                  Valeurs nutritionnelles ({formData.quantity}g/ml) :
                 </Typography>
                 <Typography variant="body2">
                   Caféine: {nutrients.caffeine.toFixed(1)} mg
@@ -381,26 +372,15 @@ export default function ConsumptionModal({ open, onClose }) {
 
       <DialogActions>
         {step === 1 ? (
-          <Button onClick={handleClose} variant="cancel">
-            Annuler
-          </Button>
+          <Button onClick={handleClose}>Annuler</Button>
         ) : (
           <>
-            <Button
-              onClick={() => setStep(1)}
-              sx={{
-                backgroundColor: "var(--color-white)",
-              }}
-            >
-              Retour
-            </Button>
-            <Button onClick={handleClose} variant="cancel">
-              Annuler
-            </Button>
+            <Button onClick={() => setStep(1)}>Retour</Button>
+            <Button onClick={handleClose}>Annuler</Button>
             <Button onClick={handleSubmit} disabled={submitting}>
               {submitting ? (
                 <CircularProgress
-                  sx={{ color: "var(--color-background)" }}
+                  sx={{ backgroundColor: "var(--color-background)" }}
                   size={24}
                 />
               ) : (

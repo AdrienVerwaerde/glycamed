@@ -20,10 +20,10 @@ const MONGO_URI = process.env.MONGO_URI;
 
 // Middleware
 app.use(
-    cors({
-        origin: ["http://localhost:3000", "http://frontend:3000"],
-        credentials: true,
-    })
+  cors({
+    origin: ["http://localhost:3000", "http://frontend:3000"],
+    credentials: true,
+  })
 );
 app.use(cookieParser());
 app.use(express.json());
@@ -33,10 +33,10 @@ app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 
 // Routes
 app.get("/", (req, res) => {
-    res.json({
-        message: "Glycamed API",
-        version: "1.0.0",
-    });
+  res.json({
+    message: "Glycamed API",
+    version: "1.0.0",
+  });
 });
 
 app.use("/api/auth", authRoutes);
@@ -50,14 +50,14 @@ app.use(errorHandler);
 
 // Connect to MongoDB and start server
 mongoose
-    .connect(MONGO_URI as string)
-    .then(() => {
-        console.log("✅ Connected to MongoDB");
-        app.listen(PORT, () => {
-            console.log(`🚀 Server listening on port ${PORT}`);
-        });
-    })
-    .catch((err) => {
-        console.error("❌ MongoDB connection error:", err);
-        process.exit(1);
+  .connect(MONGO_URI as string)
+  .then(() => {
+    console.log("✅ Connected to MongoDB");
+    app.listen(PORT, () => {
+      console.log(`🚀 Server listening on port ${PORT}`);
     });
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1);
+  });
