@@ -64,6 +64,9 @@ export const alertAPI = {
   getById: (id) => api.get(`/alerts/${id}`),
   getByType: (type) => api.get(`/alerts/type/${type}`),
   getStats: () => api.get("/alerts/stats"),
+  getToday: () => api.get("/alerts/today"),
+  getConsecutive: () => api.get("/alerts/consecutive"),
+  getHistory: () => api.get("/alerts/history"),
   create: (data) => api.post("/alerts", data),
   update: (id, data) => api.put(`/alerts/${id}`, data),
   delete: (id) => api.delete(`/alerts/${id}`),
@@ -92,6 +95,12 @@ export const consumptionAPI = {
 
   // Get user's consumption statistics
   getUserStats: (userId) => api.get(`/consumptions/user/${userId}/stats`),
+
+  // Get Amed's statistics for today
+  getAmedTodayStats: () => api.get("/consumptions/amed/today"),
+
+  // Check and create alert if needed
+  checkAlert: () => api.post("/consumptions/amed/check-alert"), 
 
   // Create consumption
   create: (data) => api.post("/consumptions", data),

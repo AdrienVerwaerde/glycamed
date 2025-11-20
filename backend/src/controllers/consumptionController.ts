@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Consumption, { IConsumption } from "../models/Consumption";
 import User from "../models/User";
+import Alert, { AlertType } from "../models/Alert";
 
 // @desc    Get all consumptions
 // @route   GET /api/consumptions

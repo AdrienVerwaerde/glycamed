@@ -346,3 +346,137 @@ export const getAlertStats = async (
     });
   }
 };
+
+// @desc    Get today's alert status
+// @route   GET /api/alerts/today
+// @access  Public
+export const getTodayAlert = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const alert = await Alert.findOne({
+      date: {
+        $gte: today,
+        $lt: tomorrow,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: alert,
+      hasAlert: !!alert,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: "Server Error",
+      message: error.message,
+    });
+  }
+};
+
+// @desc    Get consecutive alert days
+// @route   GET /api/alerts/consecutive
+// @access  Public
+export const getConsecutiveAlertDays = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const alerts = await Alert.find().sort({ date: -1 });
+
+    if (alerts.length === 0) {
+      res.status(200).json({
+        success: true,
+        data: {
+          consecutiveDays: 0,
+          currentStreak: false,
+        },
+      });
+      return;
+    }
+
+    let consecutiveDays = 0;
+    let currentStreak = false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const firstAlert = new Date(alerts[0].date);
+    firstAlert.setHours(0, 0, 0, 0);
+
+    if (firstAlert.getTime() === today.getTime()) {
+      currentStreak = true;
+      consecutiveDays = 1;
+
+      for (let i = 1; i < alerts.length; i++) {
+        const currentDate = new Date(alerts[i].date);
+        currentDate.setHours(0, 0, 0, 0);
+
+        const previousDate = new Date(alerts[i - 1].date);
+        previousDate.setHours(0, 0, 0, 0);
+
+        const diffTime = previousDate.getTime() - currentDate.getTime();
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+        if (diffDays === 1) {
+          consecutiveDays++;
+        } else {
+          break;
+        }
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        consecutiveDays,
+        currentStreak,
+        totalAlertDays: alerts.length,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: "Server Error",
+      message: error.message,
+    });
+  }
+};
+
+// @desc    Get alert history (last 30 days)
+// @route   GET /api/alerts/history
+// @access  Public
+export const getAlertHistory = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+    const alerts = await Alert.find({
+      date: { $gte: thirtyDaysAgo },
+    }).sort({ date: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: alerts.length,
+      data: alerts,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: "Server Error",
+      message: error.message,
+    });
+  }
+};
