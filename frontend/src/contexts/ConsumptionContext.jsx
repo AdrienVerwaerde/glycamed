@@ -137,9 +137,6 @@ export function ConsumptionProvider({ children }) {
       setConsumptions((prev) =>
         prev.map((c) => (c._id === id ? updated : c))
       );
-
-      fetchAmedStats();
-
       return updated;
     } catch (err) {
       throw new Error(err.response?.data?.error || err.message);
