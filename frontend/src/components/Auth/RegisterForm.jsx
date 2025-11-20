@@ -181,7 +181,10 @@ export default function RegisterForm() {
             sx={{ mt: 2, width: "280px" }}
           >
             {loading ? (
-              <CircularProgress size={24} color="inherit" />
+              <CircularProgress
+                size={24}
+                sx={{ color: "var(--color-background)" }}
+              />
             ) : (
               <Typography variant="h5">S'inscrire</Typography>
             )}

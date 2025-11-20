@@ -11,17 +11,19 @@ export default function Header() {
         alignItems: "center",
         width: "100%",
         height: "62px",
-        position: "absolute",
+        position: "fixed",
+        zIndex: 100,
         top: 0,
         backgroundColor: "var(--color-blue)",
         borderBottom: "1px solid var(--color-yellow)",
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.40)",
       }}
     >
       <Typography
         variant="h4"
         sx={{
           color: "var(--color-yellow)",
-          pl: 3,
+          ml: 3,
           fontFamily: "Rubik Vinyl",
         }}
       >
