@@ -1,23 +1,48 @@
 services:
-  app:
+  backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
-    container_name: glycamed
+    container_name: glycamed-backend
     volumes:
-      - ./backend:/app/backend
-      - /app/backend/node_modules
+      - ./backend:/app
+      - /app/node_modules
     restart: unless-stopped
     environment:
       - NODE_ENV=development
-      - PORT=8080
+      - PORT=${PORT}
       - MONGO_URI=${MONGO_URI}
-      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_ACCESS_EXPIRES=${JWT_ACCESS_EXPIRES}
+      - JWT_REFRESH_EXPIRES=${JWT_REFRESH_EXPIRES}
     ports:
       - "8080:8080"
     depends_on:
       mongo:
         condition: service_healthy
+    networks:
+      - glycamed-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: glycamed-frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://localhost:8080/api
+      - CHOKIDAR_USEPOLLING=true # For hot reload in Docker
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - glycamed-network
 
   mongo:
     image: mongo:latest
@@ -33,6 +58,12 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
+    networks:
+      - glycamed-network
 
 volumes:
   mongo_data:
+
+networks:
+  glycamed-network:
+    driver: bridge
