@@ -1,4 +1,4 @@
-import { IconButton, Tooltip } from "@mui/material";
+import { Button, IconButton, Tooltip, Typography } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import { exportToCSV } from "../../lib/utils/csvExport";
 
@@ -19,23 +19,17 @@ export default function DownloadCSVButton({ data, period, disabled = false }) {
     }
 
     return (
-        <Tooltip title="Télécharger en CSV" arrow>
-            <IconButton
+        <Tooltip title="Télécharger le rapport" arrow>
+            <Button
+                variant="download"
                 onClick={handleDownload}
                 disabled={disabled}
                 size="small"
-                sx={{
-                    color: "var(--color-background)",
-                    "&:hover": {
-                        backgroundColor: "rgba(0, 0, 0, 0.04)",
-                    },
-                    "&:disabled": {
-                        color: "rgba(0, 0, 0, 0.26)",
-                    },
-                }}
+                sx={{mt:2, width: "100%"}}
             >
                 <DownloadIcon />
-            </IconButton>
+                Télécharger le rapport
+            </Button>
         </Tooltip>
     );
 }
