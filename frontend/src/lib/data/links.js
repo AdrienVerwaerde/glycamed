@@ -4,20 +4,21 @@ const links = [
     title: "ACCUEIL",
     url: "/",
   },
-  {
-    id: 2,
-    title: "RAPPORTS",
-    url: "/reports",
-  },
+
   {
     id: 3,
     title: "TOP CONTRIBUTEURS",
     url: "/contributors",
   },
   {
-    id: 4,
-    title: "🔒AMED",
+    id: 3,
+    title: "🔒 AMED",
     url: "/amed",
+  },
+    {
+    id: 4,
+    title: "🔒 RAPPORTS",
+    url: "/reports",
   },
 ];
 
