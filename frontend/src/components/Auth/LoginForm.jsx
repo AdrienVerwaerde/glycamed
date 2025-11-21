@@ -83,7 +83,7 @@ export default function LoginForm() {
           >
             ParAmedic
           </Typography>
-          <Typography variant="h3" sx={{ pl: 5 }}>
+          <Typography variant="h4" sx={{ pl: 5 }}>
             Connexion
           </Typography>
         </Stack>
