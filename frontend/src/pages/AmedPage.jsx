@@ -72,7 +72,6 @@ export default function AmedPage() {
   return (
     <Box
       sx={{
-        width: "100%",
         maxWidth: "1400px",
         mx: "auto",
         p: { xs: 2, sm: 3, md: 4 },

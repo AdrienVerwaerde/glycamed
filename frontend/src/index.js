@@ -8,6 +8,7 @@ import theme from "./theme";
 import { AuthProvider } from "./contexts/AuthContext";
 import React from "react";
 import { ConsumptionProvider } from "./contexts/ConsumptionContext";
+import { SnackbarProvider } from "./contexts/SnackbarContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -15,7 +16,9 @@ root.render(
     <BrowserRouter>
       <AuthProvider>
         <ConsumptionProvider>
-          <App />
+          <SnackbarProvider>
+            <App />
+          </SnackbarProvider>
         </ConsumptionProvider>
       </AuthProvider>
     </BrowserRouter>
