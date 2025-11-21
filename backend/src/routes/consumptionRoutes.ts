@@ -16,28 +16,27 @@ import {
 
 const router = express.Router();
 
+// Leaderboard route
+router.get("/leaderboard", getLeaderboard);
+
 // Base routes
 router.route("/").get(getAllConsumptions).post(createConsumption);
 
-// Today's consumptions
+// Reports
 router.get("/today", getTodayConsumptions);
 router.get("/last/:days", getLastNDaysConsumptions);
 router.get("/weekly", getWeeklyConsumptions);
 router.get("/monthly", getMonthlyConsumptions);
 
-// User-specific routes
-router.route("/user/:userId").get(getConsumptionsByUserId);
+// User routes
+router.get("/user/:userId", getConsumptionsByUserId);
+router.get("/user/:userId/stats", getUserConsumptionStats);
 
-router.route("/user/:userId/stats").get(getUserConsumptionStats);
-
-// Single consumption routes
+// ⚠️ Toujours mettre :id EN TOUT DERNIER
 router
   .route("/:id")
   .get(getConsumptionById)
   .put(updateConsumption)
   .delete(deleteConsumption);
-
-// Leaderboard route
-router.get("/leaderboard", getLeaderboard);
 
 export default router;
