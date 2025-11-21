@@ -57,11 +57,16 @@ export function ConsumptionProvider({ children }) {
 
   const fetchLeaderboard = async () => {
     try {
+      console.log("Fetching leaderboard...");
+
       const { data } = await consumptionAPI.getLeaderboard();
+
+      console.log("Leaderboard fetched:", data.data);
 
       setLeaderboard(data.data || []);
     } catch (err) {
       console.error("Error fetching leaderboard:", err);
+      setLeaderboard([]);
     }
   };
 
