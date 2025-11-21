@@ -605,10 +605,8 @@ export const getLeaderboard = async (
       return;
     }
 
-    const allConsumptions = await Consumption.find({ userId: amedUser._id })
-
+    const allConsumptions = await Consumption.find()
       .populate("userId", "username email")
-
       .sort({ createdAt: -1 });
 
     const contributorsMap = new Map();
