@@ -40,10 +40,10 @@ let theme = createTheme({
         {
           props: { variant: "download" },
           style: {
-            backgroundColor: "green",
+            backgroundColor: "#49b949ff",
             color: "var(--color-white)",
             "&:hover": {
-              boxShadow: "0px 0px 8px green",
+              boxShadow: "0px 0px 8px #49b949ff",
             },
           },
         },
