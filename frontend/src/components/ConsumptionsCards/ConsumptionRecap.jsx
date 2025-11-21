@@ -12,9 +12,13 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Gauge from "../Gauge/Gauge";
+import DownloadCSVButton from "../Buttons/DownloadCSVButton";
 import { consumptionAPI } from "../../services/api";
+import { useLocation } from "react-router-dom";
 
-export default function ConsumptionRecap() {
+export default function ConsumptionRecap({ showDownloadButtons = false }) {
+  const location = useLocation();
+  const isReportsPage = location.pathname === "/reports";
   const [recapData, setRecapData] = useState({
     last3Days: null,
     weekly: null,
@@ -29,9 +33,9 @@ export default function ConsumptionRecap() {
 
   // Daily limits
   const dailyLimits = {
-    sugar: 50, // g per day
-    calories: 2000, // kcal per day
-    caffeine: 400, // mg per day
+    sugar: 50,
+    calories: 2000,
+    caffeine: 400,
   };
 
   // Calculate limits based on period
@@ -146,8 +150,6 @@ export default function ConsumptionRecap() {
     const data = recapData[period];
     if (!data) return null;
 
-    const limits = getPeriodLimits(period);
-
     return (
       <Box>
         <Box sx={{ mb: 2 }}>
@@ -162,6 +164,42 @@ export default function ConsumptionRecap() {
     );
   };
 
+  const renderAccordion = (period, title) => {
+    return (
+      <Accordion
+        expanded={expanded === period}
+        onChange={() => handleAccordionChange(period)}
+        square={true}
+        disableGutters
+        sx={{ borderRadius: "12px" }}
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          sx={{
+            "& .MuiAccordionSummary-content": {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+            },
+          }}
+        >
+          <Typography variant="h6">{title}</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          {renderAccordionContent(period)}
+          {showDownloadButtons && (
+            <DownloadCSVButton
+              data={recapData[period]}
+              period={period}
+              disabled={loading[period]}
+            />
+          )}
+        </AccordionDetails>
+      </Accordion>
+    );
+  };
+
   return (
     <Card
       sx={{
@@ -173,53 +211,12 @@ export default function ConsumptionRecap() {
       }}
     >
       <Typography variant="h4" sx={{ mb: 2 }}>
-        Récap consos
+        {isReportsPage ? ("Consommations quotidiennes") : ("Récap consos")}
       </Typography>
       <Divider sx={{ mb: 2 }} />
-
-      {/* Last 3 Days */}
-      <Accordion
-        expanded={expanded === "last3Days"}
-        onChange={() => handleAccordionChange("last3Days")}
-        square={true}
-        disableGutters
-        sx={{ borderRadius: "12px" }}
-      >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">3 derniers jours</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          {renderAccordionContent("last3Days")}
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Weekly */}
-      <Accordion
-        expanded={expanded === "weekly"}
-        onChange={() => handleAccordionChange("weekly")}
-        square={true}
-        disableGutters
-        sx={{ borderRadius: "12px" }}
-      >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Cette semaine</Typography>
-        </AccordionSummary>
-        <AccordionDetails>{renderAccordionContent("weekly")}</AccordionDetails>
-      </Accordion>
-
-      {/* Monthly */}
-      <Accordion
-        expanded={expanded === "monthly"}
-        onChange={() => handleAccordionChange("monthly")}
-        square={true}
-        disableGutters
-        sx={{ borderRadius: "12px" }}
-      >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Ce mois-ci</Typography>
-        </AccordionSummary>
-        <AccordionDetails>{renderAccordionContent("monthly")}</AccordionDetails>
-      </Accordion>
+      {renderAccordion("last3Days", "3 derniers jours")}
+      {renderAccordion("weekly", "Cette semaine")}
+      {renderAccordion("monthly", "Ce mois-ci")}
     </Card>
   );
 }
