@@ -9,7 +9,14 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 
 export default function ContributorCard({ contributor, rank }) {
-  const { username, totalContributions, lastContribution, badges } = contributor;
+  const { username, totalContributions, lastContribution, badges } =
+    contributor;
+
+  const safeBadges = badges || {
+    isTopMonthly: false,
+    streakDays: 0,
+    isFirstToday: false,
+  };
 
   const getRankColor = (rank) => {
     if (rank === 1) return "gold";
@@ -23,6 +30,9 @@ export default function ContributorCard({ contributor, rank }) {
       sx={{
         position: "relative",
         overflow: "visible",
+        minHeight: 180,
+        // minWidth: 275,
+        // width: 290,
         "&:hover": { transform: "scale(1.02)", transition: "0.2s" },
       }}
     >
@@ -59,13 +69,14 @@ export default function ContributorCard({ contributor, rank }) {
               {username}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {totalContributions} contribution{totalContributions > 1 ? "s" : ""}
+              {totalContributions} contribution
+              {totalContributions > 1 ? "s" : ""}
             </Typography>
           </Box>
         </Stack>
 
         {/* Badges */}
-        <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} mb={2}>
+        <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} mb={2} minHeight={36}>
           {badges.isTopMonthly && <BadgeChip type="topMonthly" />}
           {badges.streakDays >= 3 && (
             <BadgeChip type="streak" value={badges.streakDays} />

@@ -1,4 +1,10 @@
-import { Box, Container, Typography, Grid, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  CircularProgress,
+} from "@mui/material";
 import ContributorCard from "../components/Leaderboard/ContributorCard";
 import { useConsumption } from "../contexts/ConsumptionContext";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -8,7 +14,12 @@ export default function ContributorsPage() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="80vh"
+      >
         <CircularProgress />
       </Box>
     );
@@ -18,24 +29,40 @@ export default function ContributorsPage() {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header */}
       <Box textAlign="center" mb={4}>
-        <EmojiEventsIcon sx={{ fontSize: 60, color: "warning.main", mb: 2 }} />
-        <Typography variant="h3" fontWeight="bold" gutterBottom>
+        <EmojiEventsIcon
+          sx={{ marginTop: 5, fontSize: 80, color: "warning.main", mb: 2 }}
+        />
+        <Typography variant="h3" fontWeight="bold" gutterBottom color="white">
           Classement des Contributeurs
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body1" color="white">
           Les héros qui veillent sur Amed
         </Typography>
       </Box>
 
       {/* Leaderboard */}
-      {leaderboard.length === 0 ? (
+      {!leaderboard || leaderboard.length === 0 ? (
         <Typography variant="h6" textAlign="center" color="text.secondary">
           Aucun contributeur pour le moment
         </Typography>
       ) : (
-        <Grid container spacing={3}>
+        <Grid
+          container
+          spacing={3}
+          justifyContent="center"
+          alignItems="flex-start"
+        >
           {leaderboard.map((contributor, index) => (
-            <Grid item xs={12} sm={6} md={4} key={contributor.userId}>
+            <Grid
+              item
+              xs={12}
+              sm={10}
+              md={6}
+              lg={4}
+              display="flex"
+              justifyContent="center"
+              key={contributor.userId}
+            >
               <ContributorCard contributor={contributor} rank={index + 1} />
             </Grid>
           ))}

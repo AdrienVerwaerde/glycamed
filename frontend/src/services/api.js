@@ -100,7 +100,7 @@ export const consumptionAPI = {
   getAmedTodayStats: () => api.get("/consumptions/amed/today"),
 
   // Check and create alert if needed
-  checkAlert: () => api.post("/consumptions/amed/check-alert"), 
+  checkAlert: () => api.post("/consumptions/amed/check-alert"),
 
   // Create consumption
   create: (data) => api.post("/consumptions", data),
@@ -110,6 +110,9 @@ export const consumptionAPI = {
 
   // Delete consumption
   delete: (id) => api.delete(`/consumptions/${id}`),
+
+  // Leaderboard
+  getLeaderboard: () => api.get("/consumptions/leaderboard"),
 };
 
 // Products API calls
