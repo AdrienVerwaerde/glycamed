@@ -1,7 +1,9 @@
+import { useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import LinearProgress from "@mui/material/LinearProgress";
 import { styled } from "@mui/material/styles";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 const StyledLinearProgress = styled(LinearProgress)(({ theme, severity }) => ({
   height: 10,
@@ -13,8 +15,8 @@ const StyledLinearProgress = styled(LinearProgress)(({ theme, severity }) => ({
       severity === "high"
         ? "var(--color-red)"
         : severity === "medium"
-        ? "var(--color-yellow)"
-        : "var(--color-blue)",
+          ? "var(--color-yellow)"
+          : "var(--color-blue)",
   },
 }));
 
@@ -26,10 +28,24 @@ export default function Gauge({
   thresholds = { low: 50, medium: 75 },
   icon,
 }) {
-  // Ensure amount is a valid number
+  const { showSnackbar } = useSnackbar();
+  const previouslyOverLimit = useRef(false);
+
   const safeAmount = Number(amount) || 0;
   const actualPercentage = (safeAmount / max) * 100;
   const visualPercentage = Math.min(actualPercentage, 100);
+
+  // Check for limit violations
+  useEffect(() => {
+    const isOverLimit = actualPercentage >= 100;
+
+    // Only show notification when crossing the threshold (not on every update)
+    if (isOverLimit && !previouslyOverLimit.current) {
+      showSnackbar(`🚨 Limite de ${label.toLowerCase()} dépassée !`, "error");
+    }
+
+    previouslyOverLimit.current = isOverLimit;
+  }, [actualPercentage, label, showSnackbar]);
 
   const getSeverity = () => {
     if (actualPercentage >= thresholds.medium) return "high";
@@ -52,21 +68,23 @@ export default function Gauge({
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Box 
-        sx={{ 
-          display: "flex", 
-          alignItems: "center", 
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
           mb: 1.5,
-          gap: 1
+          gap: 1,
         }}
       >
-        {icon && <Box sx={{ color: getColor(), fontSize: "1.5rem" }}>{icon}</Box>}
-        <Typography 
-          variant="h6" 
-          component="div" 
-          sx={{ 
+        {icon && (
+          <Box sx={{ color: getColor(), fontSize: "1.5rem" }}>{icon}</Box>
+        )}
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{
             flexGrow: 1,
-            fontSize: { xs: "1rem", sm: "1.15rem" }
+            fontSize: { xs: "1rem", sm: "1.15rem" },
           }}
         >
           {label}
@@ -74,17 +92,17 @@ export default function Gauge({
       </Box>
 
       <Box sx={{ mb: 1.5 }}>
-        <Typography 
-          variant="h4" 
+        <Typography
+          variant="h4"
           fontWeight="bold"
           sx={{
-            fontSize: { xs: "1.5rem", sm: "2rem" }
+            fontSize: { xs: "1.5rem", sm: "2rem" },
           }}
         >
           {safeAmount.toFixed(1)}
-          <Typography 
-            component="span" 
-            variant="h6" 
+          <Typography
+            component="span"
+            variant="h6"
             color="text.secondary"
             sx={{ ml: 0.5 }}
           >
@@ -99,7 +117,15 @@ export default function Gauge({
         severity={severity}
       />
 
-      <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1, flexWrap: "wrap", gap: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          mt: 1,
+          flexWrap: "wrap",
+          gap: 1,
+        }}
+      >
         <Typography variant="caption" color="text.secondary">
           {actualPercentage.toFixed(1)}% de la limite
         </Typography>
