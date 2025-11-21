@@ -5,7 +5,7 @@ export default function ReportsPage() {
     return (
         <Box
             sx={{
-                width: "100vw",
+                width: "100%",
                 display: "flex",
                 flexWrap: "wrap",
                 gap: 2,
@@ -13,8 +13,9 @@ export default function ReportsPage() {
                 justifyContent: "center",
                 mt: 10,
                 mb: 2,
-            }}>
-            <ConsumptionRecap />
+            }}
+        >
+            <ConsumptionRecap showDownloadButtons={true} />
         </Box>
     )
 }
