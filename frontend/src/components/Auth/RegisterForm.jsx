@@ -113,7 +113,7 @@ export default function RegisterForm() {
           >
             ParAmedic
           </Typography>
-          <Typography variant="h3" sx={{ pl: 5, fontSize: "28px" }}>
+          <Typography variant="h4" sx={{ pl: 5, fontSize: "28px" }}>
             Inscription
           </Typography>
         </Stack>
