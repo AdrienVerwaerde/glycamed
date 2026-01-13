@@ -15,6 +15,7 @@ import Gauge from "../Gauge/Gauge";
 import DownloadCSVButton from "../Buttons/DownloadCSVButton";
 import { consumptionAPI } from "../../services/api";
 import { useLocation } from "react-router-dom";
+import { HEALTH_LIMITS } from "../../config";
 
 export default function ConsumptionRecap({ showDownloadButtons = false }) {
   const location = useLocation();
@@ -33,9 +34,9 @@ export default function ConsumptionRecap({ showDownloadButtons = false }) {
 
   // Daily limits
   const dailyLimits = {
-    sugar: 50,
-    calories: 2000,
-    caffeine: 400,
+    sugar: HEALTH_LIMITS.SUGAR_MAX,
+    calories: HEALTH_LIMITS.CALORIES_MAX,
+    caffeine: HEALTH_LIMITS.CAFFEINE_MAX,
   };
 
   // Calculate limits based on period

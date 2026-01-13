@@ -1,8 +1,7 @@
-// src/contexts/ConsumptionContext.jsx
-
 import { createContext, useContext, useState, useEffect } from "react";
 import { consumptionAPI } from "../services/api";
 import { useAuth } from "./AuthContext";
+import { HEALTH_LIMITS, STORAGE_KEYS } from "../config";
 
 const ConsumptionContext = createContext();
 
@@ -86,12 +85,12 @@ export function ConsumptionProvider({ children }) {
      * If so, refreshes today's consumptions from the API and clears the old ones.
      */
     const checkDayChange = () => {
-      const lastCheck = localStorage.getItem("lastDayCheck");
+      const lastCheck = localStorage.getItem(STORAGE_KEYS.LAST_DAY_CHECK);
       const today = getStartOfToday();
 
       if (lastCheck !== today) {
         console.log("Today is a new day! Refreshing consumptions...");
-        localStorage.setItem("lastDayCheck", today);
+        localStorage.setItem(STORAGE_KEYS.LAST_DAY_CHECK, today);
 
         // Clear old consumptions immediately
         setConsumptions([]);
@@ -103,7 +102,7 @@ export function ConsumptionProvider({ children }) {
 
     // Set initial check
     const today = getStartOfToday();
-    localStorage.setItem("lastDayCheck", today);
+    localStorage.setItem(STORAGE_KEYS.LAST_DAY_CHECK, today);
 
     // Check every minute for day change
     const interval = setInterval(checkDayChange, 60000);
@@ -183,9 +182,9 @@ export function ConsumptionProvider({ children }) {
 
   // Daily limits
   const limits = {
-    caffeine: 400, // mg per day
-    sugar: 50, // g per day
-    calories: 2000, // kcal per day
+    caffeine: HEALTH_LIMITS.CAFFEINE_MAX, // mg per day
+    sugar: HEALTH_LIMITS.SUGAR_MAX, // g per day
+    calories: HEALTH_LIMITS.CALORIES_MAX, // kcal per day
   };
 
   return (

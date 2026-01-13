@@ -23,6 +23,7 @@ import HealthStatus from "../components/Health/HealthStatus";
 import AlertBadge from "../components/Alerts/AlertBadge";
 import { alertAPI } from "../services/api";
 import { useConsumption } from "../contexts/ConsumptionContext";
+import { HEALTH_LIMITS } from "../config";
 
 export default function AmedPage() {
   const { totals, stats, loading, error, consumptions } = useConsumption();
@@ -38,9 +39,9 @@ export default function AmedPage() {
   };
 
   const limits = {
-    sugar: 50,
-    calories: 2000,
-    caffeine: 400,
+    sugar: HEALTH_LIMITS.SUGAR_MAX,
+    calories: HEALTH_LIMITS.CALORIES_MAX,
+    caffeine: HEALTH_LIMITS.CAFFEINE_MAX,
   };
 
   useEffect(() => {

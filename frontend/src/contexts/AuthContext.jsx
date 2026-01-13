@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { authAPI } from "../services/api";
+import { STORAGE_KEYS } from "../config";
+import * as Sentry from "@sentry/react";
 
 const AuthContext = createContext();
 
@@ -28,7 +30,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
       if (!token) {
         setLoading(false);
         return;
@@ -36,9 +38,18 @@ export const AuthProvider = ({ children }) => {
 
       const response = await authAPI.me();
       setUser(response.data.data);
+
+      // Sentry User
+      Sentry.setUser({
+        id: response.data.data.id,
+        email: response.data.data.email,
+        username: response.data.data.username,
+      });
+
     } catch (error) {
       console.error("Auth check failed:", error);
-      localStorage.removeItem("accessToken");
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      Sentry.setUser(null);
     } finally {
       setLoading(false);
     }
@@ -48,9 +59,16 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.login({ email, password });
 
-      localStorage.setItem("accessToken", response.data.data.accessToken);
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.data.accessToken);
       setUser(response.data.data.user);
       setShouldRedirect(true); // Active la redirection
+
+      // Sentry User
+      Sentry.setUser({
+        id: response.data.data.user.id,
+        email: response.data.data.user.email,
+        username: response.data.data.user.username,
+      });
 
       return response.data;
     } catch (error) {
@@ -62,9 +80,16 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.register(userData);
 
-      localStorage.setItem("accessToken", response.data.data.accessToken);
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.data.accessToken);
       setUser(response.data.data.user);
       setShouldRedirect(true); // Active la redirection
+
+      // Sentry User
+      Sentry.setUser({
+        id: response.data.data.user.id,
+        email: response.data.data.user.email,
+        username: response.data.data.user.username,
+      });
 
       return response.data;
     } catch (error) {
@@ -78,8 +103,9 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
-      localStorage.removeItem("accessToken");
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
       setUser(null);
+      Sentry.setUser(null);
       navigate("/login");
     }
   };

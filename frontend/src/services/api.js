@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_URL } from "../config";
+import { API_URL, STORAGE_KEYS } from "../config";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Add access token to requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -24,7 +24,11 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes("/auth/login")
+    ) {
       originalRequest._retry = true;
 
       try {
@@ -34,12 +38,12 @@ api.interceptors.response.use(
           { withCredentials: true }
         );
 
-        localStorage.setItem("accessToken", data.data.accessToken);
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.data.accessToken);
         originalRequest.headers.Authorization = `Bearer ${data.data.accessToken}`;
 
         return api(originalRequest);
       } catch (refreshError) {
-        localStorage.removeItem("accessToken");
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         window.location.href = "/login";
         return Promise.reject(refreshError);
       }

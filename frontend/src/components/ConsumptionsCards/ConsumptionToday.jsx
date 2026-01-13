@@ -26,6 +26,7 @@ import Gauge from "../Gauge/Gauge";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { HEALTH_LIMITS } from "../../config";
 
 export default function ConsumptionToday() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -39,9 +40,9 @@ export default function ConsumptionToday() {
   };
 
   const limits = {
-    sugar: 50,
-    calories: 2000,
-    caffeine: 400,
+    sugar: HEALTH_LIMITS.SUGAR_MAX,
+    calories: HEALTH_LIMITS.CALORIES_MAX,
+    caffeine: HEALTH_LIMITS.CAFFEINE_MAX,
   };
 
   const formatTime = (dateString) => {
