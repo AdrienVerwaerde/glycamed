@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
-import axios from "axios";
+import { useAuth } from "../../contexts/AuthContext";
 import CloseIcon from "@mui/icons-material/Close";
 
 export default function RegisterForm() {
@@ -19,6 +19,7 @@ export default function RegisterForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -40,17 +41,14 @@ export default function RegisterForm() {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        process.env.REACT_APP_API_URL + "/users",
-        {
-          email,
-          password,
-          username,
-          role: "user",
-        }
-      );
+      const response = await register({
+        email,
+        password,
+        username,
+        role: "user",
+      });
 
-      if (response.data.success) {
+      if (response.success) {
         // Registration successful, redirect to login
         navigate("/login", {
           state: {
