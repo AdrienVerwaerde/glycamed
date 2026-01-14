@@ -13,6 +13,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import * as Sentry from "@sentry/react";
 import { SENTRY } from "./config";
 
+console.log("Initializing Sentry with DSN:", SENTRY.DSN);
+
 Sentry.init({
   dsn: SENTRY.DSN,
   integrations: [

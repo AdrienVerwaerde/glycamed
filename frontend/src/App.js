@@ -10,6 +10,7 @@ import AmedPage from "./pages/AmedPage";
 import Layout from "./components/Layout";
 import ContributorsPage from "./pages/ContributorsPage";
 import ReportsPage from "./pages/ReportsPage";
+import SentryTestPage from "./pages/SentryTestPage";
 
 export default function App() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
 
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/sentry-test" element={<SentryTestPage />} />
         </Routes>
       </main>
     </div>
